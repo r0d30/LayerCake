@@ -1,0 +1,193 @@
+MIT License with Enhanced Attribution and Commercial Restrictions
+
+Copyright (c) 2024-2025 LayerCake Project
+Original Creator: Rodrigue Noel (r0d30) <noel.rodrigue.7850@gmail.com>
+Project Repository: https://github.com/r0d30/LayerCake
+
+================================================================================
+                                   LICENCE
+================================================================================
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "LayerCake Compiler",
+including but not limited to: source code, documentation, tools, libraries, 
+examples, and all related materials), to deal in the Software with the 
+following permissions and restrictions:
+
+PERMISSIONS GRANTED:
+- ✅ Use the software for any personal, educational, or research purpose
+- ✅ Modify and adapt the software for your needs
+- ✅ Distribute modified or unmodified copies
+- ✅ Create derivative works and improvements
+- ✅ Use in commercial projects compiled with LayerCake (with attribution)
+
+RESTRICTIONS:
+- ❌ Commercial sale of LayerCake itself or any components
+- ❌ Commercial sale of LayerCake libraries or extensions  
+- ❌ Redistributing LayerCake under a different name
+- ❌ Removing or modifying attribution requirements
+- ❌ Claiming ownership of LayerCake or its original design
+
+================================================================================
+                              ATTRIBUTION REQUIREMENTS
+================================================================================
+
+1. GENERAL ATTRIBUTION:
+   The above copyright notice and this permission notice shall be included in 
+   all copies or substantial portions of the Software.
+
+2. COMPILED SOFTWARE ATTRIBUTION:
+   Any software compiled using the LayerCake compiler that is distributed 
+   publicly must include one of the following attribution notices:
+
+   - In software documentation: "Compiled with LayerCake Compiler"
+   - In application credits/about section: "Built with LayerCake"
+   - In command-line tools help: "--version output must mention LayerCake"
+   - In library documentation: "Created using LayerCake language"
+
+3. DERIVATIVE WORKS ATTRIBUTION:
+   Any derivative compiler, language, or development tool based on LayerCake 
+   must clearly indicate its relationship to LayerCake and cannot use the 
+   name "LayerCake" or confusingly similar names.
+
+4. REDISTRIBUTION REQUIREMENTS:
+   Redistributions must maintain the original name "LayerCake" and cannot
+   be renamed to avoid attribution or create confusion about origin.
+
+================================================================================
+                               COMMERCIAL TERMS
+================================================================================
+
+1. ORIGINAL CREATOR RIGHTS:
+   The original creator retains the exclusive right to:
+   - Offer commercial licenses with different terms
+   - Provide commercial support and consulting services
+   - Create and distribute premium tools and extensions
+   - License the LayerCake name and brand for commercial use
+
+2. PROHIBITED COMMERCIAL ACTIVITIES:
+   The following activities are explicitly prohibited without written permission:
+   - ❌ Selling LayerCake compiler or any of its components
+   - ❌ Selling LayerCake libraries, extensions, or add-ons
+   - ❌ Creating commercial products that compete directly with LayerCake
+   - ❌ Offering LayerCake as a paid service or SaaS platform
+   - ❌ Bundling LayerCake in commercial software distributions for profit
+
+3. PERMITTED COMMERCIAL ACTIVITIES:
+   The following commercial activities are allowed with proper attribution:
+   - ✅ Using LayerCake to develop commercial software applications
+   - ✅ Providing consulting services that utilize LayerCake
+   - ✅ Teaching LayerCake in paid courses (with attribution)
+   - ✅ Writing and selling books about LayerCake programming
+   - ✅ Creating content (videos, tutorials) mentioning LayerCake
+
+4. CLARIFICATION ON COMMERCIAL USE:
+   "Commercial use" refers to selling LayerCake itself or its components.
+   Using LayerCake to create commercial products is encouraged and permitted.
+
+================================================================================
+                              TRADEMARK PROTECTION
+================================================================================
+
+1. PROTECTED NAMES AND MARKS:
+   - "LayerCake" (name)
+   - "LayerCake Compiler"
+   - "LC_core" and "LC_asm" (components)
+   - LayerCake logo and visual identity (when created)
+   - Official LayerCake file extensions (.lc, .layercake)
+
+2. PERMITTED USES:
+   - Academic and research use
+   - Technical documentation and tutorials
+   - Community discussions and forums
+   - Bug reports and feature requests
+
+3. PERMISSION REQUIRED FOR:
+   - Commercial use of LayerCake trademarks
+   - Creating competing products with confusing names
+   - Official LayerCake merchandise or branded products
+
+================================================================================
+                                PROJECT SCOPE
+================================================================================
+
+This license applies to all components of the LayerCake project including:
+
+1. CORE COMPONENTS:
+   - LC_core (lexer, parser, semantic analyzer, optimizer, code generator)
+   - LC_asm (assembler and linker)
+   - Memory management system
+   - Error handling system
+   - Utility libraries
+
+2. TOOLS AND INTERFACES:
+   - Command-line interface (CLI)
+   - Build system and Makefiles
+   - Debugging tools
+   - Package manager (if developed)
+   - IDE extensions and integrations
+
+3. DOCUMENTATION AND EXAMPLES:
+   - Source code documentation
+   - User manuals and guides
+   - API documentation
+   - Example programs and tutorials
+   - Best practices guides
+
+4. SUPPORTING MATERIALS:
+   - Installation scripts
+   - Testing frameworks
+   - Configuration files
+   - Development tools
+
+================================================================================
+                              CONTRIBUTION TERMS
+================================================================================
+
+1. CONTRIBUTOR AGREEMENT:
+   By contributing to LayerCake, contributors agree that:
+   - Contributions are made under the same license terms
+   - Original creator retains commercial licensing rights
+   - Contributors retain credit for their specific contributions
+   - Contributions may be used in commercial offerings
+
+2. CONTRIBUTION ATTRIBUTION:
+   - All contributors will be credited in CONTRIBUTORS.md
+   - Significant contributors may be mentioned in release notes
+   - Commercial products may acknowledge key contributors
+
+================================================================================
+                                 DISCLAIMER
+================================================================================
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+                              CONTACT INFORMATION
+================================================================================
+
+For licensing questions, commercial licensing, or trademark permissions:
+- Email: noel.rodrigue.7850@gmail.com
+- Website: https://layercake-lang.org (future)
+- Business inquiries: noel.rodrigue.7850@gmail.com
+
+For technical support and community:
+- GitHub Issues: https://github.com/r0d30/LayerCake/issues
+- Community Forum: https://community.layercake-lang.org (future)
+- Discord: https://discord.gg/layercake (future)
+
+================================================================================
+                                VERSION INFO
+================================================================================
+
+License Version: 1.0
+Last Updated: July 9, 2025
+Next Review: July 2026 (or as needed for project evolution)
+
+================================================================================

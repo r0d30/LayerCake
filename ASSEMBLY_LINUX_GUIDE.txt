@@ -1,0 +1,292 @@
+===============================================================================
+                    GUIDE DE DÉVELOPPEMENT EN ASSEMBLEUR LINUX
+                              Pour le projet LayerCake
+===============================================================================
+
+LayerCake Compiler Assembly Guide
+Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
+Licensed under MIT License with Enhanced Attribution
+
+IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
+See LICENSE file for full terms and restrictions.
+
+===============================================================================
+
+SOMMAIRE :
+1. Concepts de base
+2. Syntaxe AT&T vs Intel
+3. Registres et conventions d'appel
+4. Appels système (syscalls)
+5. Structure d'un programme
+6. Gestion de la mémoire
+7. Outils de développement
+8. Debugging et optimisation
+9. Bonnes pratiques pour LayerCake
+
+===============================================================================
+1. CONCEPTS DE BASE
+===============================================================================
+
+L'assembleur Linux utilise la syntaxe AT&T par défaut (GNU Assembler - gas).
+
+DIFFÉRENCES PRINCIPALES :
+- Suffixes de taille : b (byte), w (word), l (long), q (quad)
+- Ordre des opérandes : source, destination
+- Préfixes : % pour registres, $ pour constantes
+- Adressage : displacement(%base,%index,scale)
+
+EXEMPLE :
+    movl $42, %eax          # Charge 42 dans EAX
+    movl %eax, variable     # Sauvegarde EAX dans variable
+
+===============================================================================
+2. SYNTAXE AT&T vs INTEL
+===============================================================================
+
+AT&T (utilisée par gas) :
+    movl $5, %eax           # eax = 5
+    addl %ebx, %eax         # eax = eax + ebx
+    movl 8(%ebp), %edx      # edx = *(ebp + 8)
+
+Intel (plus lisible, utilisable avec .intel_syntax) :
+    mov eax, 5              # eax = 5
+    add eax, ebx            # eax = eax + ebx
+    mov edx, [ebp + 8]      # edx = *(ebp + 8)
+
+CONSEIL : Utilise .intel_syntax noprefix au début pour plus de clarté.
+
+===============================================================================
+3. REGISTRES ET CONVENTIONS D'APPEL
+===============================================================================
+
+REGISTRES x86-64 :
+- RAX/EAX : Accumulateur, valeur de retour
+- RBX/EBX : Base (callee-saved)
+- RCX/ECX : Compteur
+- RDX/EDX : Données
+- RSI/ESI : Source index
+- RDI/EDI : Destination index
+- RBP/EBP : Base pointer (frame pointer)
+- RSP/ESP : Stack pointer
+- R8-R15 : Registres additionnels (x86-64)
+
+CONVENTION D'APPEL System V (Linux x86-64) :
+- Arguments : RDI, RSI, RDX, RCX, R8, R9, puis stack
+- Retour : RAX (RDX pour 128-bit)
+- Callee-saved : RBX, RBP, R12-R15
+- Caller-saved : RAX, RCX, RDX, RSI, RDI, R8-R11
+
+===============================================================================
+4. APPELS SYSTÈME (SYSCALLS)
+===============================================================================
+
+SYSCALLS LINUX x86-64 :
+- Numéro syscall dans RAX
+- Arguments dans RDI, RSI, RDX, R10, R8, R9
+- Instruction : syscall
+- Retour dans RAX (valeur négative = erreur)
+
+SYSCALLS ESSENTIELS :
+- sys_read (0) : Lire depuis un fd
+- sys_write (1) : Écrire vers un fd
+- sys_open (2) : Ouvrir fichier
+- sys_close (3) : Fermer fd
+- sys_exit (60) : Terminer programme
+- sys_mmap (9) : Allouer mémoire
+- sys_munmap (11) : Libérer mémoire
+
+EXEMPLE - Écrire "Hello" :
+    mov rax, 1              # sys_write
+    mov rdi, 1              # stdout
+    mov rsi, msg            # buffer
+    mov rdx, 5              # taille
+    syscall
+
+===============================================================================
+5. STRUCTURE D'UN PROGRAMME
+===============================================================================
+
+SECTIONS PRINCIPALES :
+.section .data      # Données initialisées
+.section .bss       # Données non initialisées
+.section .text      # Code exécutable
+
+EXEMPLE MINIMAL :
+    .intel_syntax noprefix
+    
+    .section .data
+    msg: .ascii "Hello, World!\n"
+    msg_len = . - msg
+    
+    .section .text
+    .global _start
+    
+    _start:
+        # Écrire message
+        mov rax, 1
+        mov rdi, 1
+        mov rsi, msg
+        mov rdx, msg_len
+        syscall
+        
+        # Sortir proprement
+        mov rax, 60
+        mov rdi, 0
+        syscall
+
+COMPILATION :
+    as -64 file.asm -o file.o
+    ld file.o -o executable
+
+===============================================================================
+6. GESTION DE LA MÉMOIRE
+===============================================================================
+
+STACK (pile) :
+- Croît vers les adresses basses
+- RSP pointe vers le sommet
+- push/pop pour manipuler
+- Utilisée pour variables locales et appels
+
+HEAP (tas) :
+- Allocation dynamique avec mmap/munmap
+- Ou utiliser malloc/free depuis libc
+
+EXEMPLE - Allocation mmap :
+    mov rax, 9              # sys_mmap
+    mov rdi, 0              # addr (laisse le kernel choisir)
+    mov rsi, 4096           # taille (4KB)
+    mov rdx, 3              # prot (PROT_READ | PROT_WRITE)
+    mov r10, 34             # flags (MAP_PRIVATE | MAP_ANONYMOUS)
+    mov r8, -1              # fd (-1 pour anonymous)
+    mov r9, 0               # offset
+    syscall                 # retourne adresse dans RAX
+
+===============================================================================
+7. OUTILS DE DÉVELOPPEMENT
+===============================================================================
+
+ASSEMBLEUR :
+- gas (GNU Assembler) : Assembleur standard Linux
+- nasm : Alternative avec syntaxe Intel native
+
+DÉBOGAGE :
+- gdb : Débogueur principal
+- objdump : Désassemblage
+- strace : Trace des syscalls
+- valgrind : Détection de fuites mémoire
+
+ANALYSE :
+- readelf : Informations sur ELF
+- nm : Symboles
+- size : Taille des sections
+
+COMMANDES UTILES :
+    objdump -d executable           # Désassemble
+    strace ./executable             # Trace syscalls
+    gdb ./executable                # Debug interactif
+    readelf -h executable           # Headers ELF
+
+===============================================================================
+8. DEBUGGING ET OPTIMISATION
+===============================================================================
+
+DEBUGGING :
+- Utilise les symboles de debug : as -g
+- Points d'arrêt sur labels dans gdb
+- Examine registres : info registers
+- Examine mémoire : x/10x $rsp
+
+OPTIMISATION :
+- Minimise les accès mémoire
+- Utilise les registres efficacement
+- Évite les branches si possible
+- Aligne les données (alignement naturel)
+- Utilise les instructions vectorielles (SSE/AVX) si besoin
+
+EXEMPLE - Boucle optimisée :
+    mov rcx, 1000           # Compteur
+    xor rax, rax            # Résultat = 0
+    
+    loop_start:
+        add rax, rcx        # Accumule
+        dec rcx             # Décrémente
+        jnz loop_start      # Continue si != 0
+
+===============================================================================
+9. BONNES PRATIQUES POUR LAYERCAKE
+===============================================================================
+
+STRUCTURE MODULAIRE :
+- Un fichier .asm par module
+- Fonctions avec conventions claires
+- Préfixes pour éviter les conflits de noms
+- Documentation des registres utilisés
+
+GESTION D'ERREURS :
+- Vérifier les codes de retour des syscalls
+- Nettoyer les ressources en cas d'erreur
+- Messages d'erreur informatifs
+
+PERFORMANCE :
+- Profiler avec perf
+- Optimiser les chemins critiques
+- Utiliser les caches efficacement
+- Minimiser les syscalls
+
+PORTABILITÉ :
+- Séparer le code spécifique à l'architecture
+- Utiliser des macros pour les différences
+- Tester sur différentes distributions
+
+EXEMPLE - Fonction modulaire :
+    .intel_syntax noprefix
+    
+    # lc_strlen - Calcule la longueur d'une chaîne C
+    # Entrée : RDI = pointeur vers chaîne
+    # Sortie : RAX = longueur
+    # Modifie : RAX, RCX
+    lc_strlen:
+        push rbp
+        mov rbp, rsp
+        
+        xor rax, rax            # Compteur = 0
+        mov rcx, rdi            # Copie du pointeur
+        
+    strlen_loop:
+        cmp byte ptr [rcx], 0   # Caractère nul ?
+        je strlen_done          # Oui, fini
+        inc rcx                 # Pointeur suivant
+        inc rax                 # Compteur++
+        jmp strlen_loop
+        
+    strlen_done:
+        pop rbp
+        ret
+
+LINKING MULTIPLE FILES :
+    as -64 main.asm -o main.o
+    as -64 utils.asm -o utils.o
+    ld main.o utils.o -o layercake
+
+===============================================================================
+RESSOURCES SUPPLÉMENTAIRES
+===============================================================================
+
+DOCUMENTATION :
+- Intel Software Developer Manuals
+- AMD64 Architecture Programmer's Manual
+- Linux syscall reference : man 2 syscalls
+- GNU Assembler manual : info as
+
+OUTILS EN LIGNE :
+- Godbolt (compiler explorer)
+- Assembly tutorials sur OSDev wiki
+- Linux Assembly HOWTO
+
+CONSEIL POUR LAYERCAKE :
+Commence par implémenter les utilitaires de base (strlen, memcpy, etc.)
+puis construis progressivement les modules plus complexes (lexer, parser).
+Chaque fonction doit être testable indépendamment.
+
+===============================================================================

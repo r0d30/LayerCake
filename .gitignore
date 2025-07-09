@@ -1,0 +1,123 @@
+# LayerCake .gitignore
+# Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
+# Commercial sale of LayerCake prohibited - See LICENSE file
+
+# Development notes and tasks (should not be committed)
+**/tasks.txt
+**/infos.txt
+tasks.txt
+infos.txt
+
+# Build artifacts
+build/
+*.o
+*.elf
+*.exe
+*.so
+*.dll
+*.dylib
+*.a
+*.lib
+
+# Assembly temporary files
+*.lst
+*.map
+*.sym
+
+# Debug files
+*.gdb
+*.pdb
+*.dSYM/
+
+# IDE and editor files
+.vscode/settings.json
+.vscode/c_cpp_properties.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Test results
+test_results/
+*.test
+test_output/
+
+# Log files
+*.log
+debug.log
+error.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Package files
+*.tar.gz
+*.zip
+*.rar
+
+# Personal configuration
+config.local
+.env.local
+personal_notes.txt
+
+# Commercial/Business files (keep these private)
+business/
+commercial/
+contracts/
+nda/
+private/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Documentation builds
+docs/build/
+*.pdf
+*.epub
+
+# Coverage reports
+coverage/
+*.gcov
+*.lcov
+
+# Profiling data
+*.prof
+*.pprof
+gmon.out
+
+# Static analysis
+.analysis/
+*.analysis
+
+# Dependencies (if using external libs)
+deps/
+vendor/
+node_modules/
+
+# Auto-generated files
+generated/
+auto_gen/
+
+# Sensitive data patterns
+*secret*
+*private*
+*confidential*
+*.key
+*.pem
+*.p12
+*.keystore
+
+# Email addresses and personal info in configs
+*@*
+emails.txt
+contacts.txt
