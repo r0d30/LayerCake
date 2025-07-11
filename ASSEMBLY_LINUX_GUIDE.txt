@@ -3,6 +3,7 @@
                               Pour le projet LayerCake
 ===============================================================================
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 LayerCake Compiler Assembly Guide - Version Détaillée
 =======
@@ -10,6 +11,9 @@ LayerCake Compiler Assembly Guide - Version Détaillée
 =======
 LayerCake Compiler Assembly Guide
 >>>>>>> Stashed changes
+=======
+LayerCake Compiler Assembly Guide - Version Détaillée
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
 Licensed under MIT License with Enhanced Attribution
 
@@ -20,6 +24,7 @@ See LICENSE file for full terms and restrictions.
 
 ===============================================================================
 
+<<<<<<< HEAD
 >>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
 SOMMAIRE :
 1. Concepts de base
@@ -176,6 +181,149 @@ Imaginez 16 boîtes étiquetées où vous pouvez stocker des nombres instantané
 - Mémoire RAM = Armoire dans la pièce (plus lent à accéder)
 - Disque dur = Entrepôt en ville (très lent à accéder)
 
+=======
+🎯 OBJECTIF DE CE GUIDE :
+Ce guide vous apprend l'assembleur Linux x86-64 étape par étape, avec de nombreux
+exemples pratiques. Même si vous n'avez jamais fait d'assembleur, vous devriez
+pouvoir suivre et comprendre chaque concept.
+
+✨ NOUVEAUTÉ LAYERCAKE : MACROS OFFICIELLES
+Ce guide utilise maintenant les macros LayerCake qui remplacent les nombres
+cryptiques par les vrais noms architecturaux officiels ! 
+
+Exemples de transformation :
+- mov rax, 1     →  mov syscall_num, sys_write
+- mov rdi, 1     →  mov first_param, stdout_fd
+- mov rax, 60    →  mov syscall_num, sys_exit
+
+Ces macros sont définies dans src/LC_core/lc_syscalls.asm et suivent les
+documentations officielles Intel x86-64 et POSIX/Linux.
+
+===============================================================================
+
+SOMMAIRE DÉTAILLÉ :
+1. 🧠 Qu'est-ce que l'assembleur ? (Les bases absolues)
+2. 🔧 Syntaxe AT&T vs Intel (Comprendre les deux mondes)
+3. 📦 Les registres expliqués simplement (Votre boîte à outils)
+4. 🤝 Conventions d'appel (Comment les fonctions se parlent)
+5. 🔌 Appels système (Parler au noyau Linux)
+6. 🏗️ Structure d'un programme (Architecture complète)
+7. 🧮 Gestion de la mémoire (Stack, heap et compagnie)
+8. 🛠️ Outils de développement (Votre arsenal)
+9. 🐛 Debugging et optimisation (Chasser les bugs)
+10. ✨ Bonnes pratiques pour LayerCake (Code professionnel)
+11. 📚 Exemples complets (Mini-programmes commentés)
+12. 📖 Instructions assembleur détaillées (Comprendre chaque détail)
+13. 🎯 Optimisations avancées (Rendre votre code ultra-rapide)
+14. 🔍 Debugging avancé (Techniques professionnelles pour chasser les bugs)
+15. 🎯 Instructions avancées et leurs macros officielles (Référence complète)
+15. 🎯 Instructions avancées et leurs macros officielles (Optimisations puissantes)
+16. 📚 Guide complet des macros officielles LayerCake (Utilisation pratique)
+
+===============================================================================
+1. 🧠 QU'EST-CE QUE L'ASSEMBLEUR ? (LES BASES ABSOLUES)
+===============================================================================
+
+ANALOGIE SIMPLE :
+Imaginez que votre processeur est un ouvrier très spécialisé qui ne comprend
+que des instructions ultra-simples comme :
+- "Prends ce nombre et mets-le dans cette boîte"
+- "Additionne ces deux nombres"
+- "Va à cette adresse si cette condition est vraie"
+
+L'assembleur, c'est le langage pour donner ces instructions simples.
+
+QU'EST-CE QUE LE PROCESSEUR COMPREND VRAIMENT ?
+Le processeur ne comprend que des nombres binaires (0 et 1). Par exemple :
+- 01001000 11000111 11000000 00000000 00000000 = "mov rax, 0"
+
+L'assembleur traduit des mots humains en ces nombres binaires :
+- mov rax, 0  →  (assembleur traduit)  →  01001000 11000111...
+
+POURQUOI ÉCRIRE EN ASSEMBLEUR ?
+1. CONTRÔLE TOTAL : Vous contrôlez exactement ce que fait le processeur
+2. PERFORMANCE : Pas d'intermédiaire, code ultra-rapide
+3. TAILLE : Programmes très petits
+4. COMPRÉHENSION : Vous comprenez vraiment comment marche un ordinateur
+
+EXEMPLE CONCRET - "Hello World" le plus simple possible :
+    # Ceci dit au processeur d'écrire "Hello" à l'écran
+    mov rax, 1          # mov syscall_num, sys_write - "Je veux écrire quelque chose"
+    mov rdi, 1          # mov first_param, stdout_fd - "Sur l'écran principal"  
+    mov rsi, message    # mov second_param, message - "Voici où est mon texte"
+    mov rdx, 5          # mov third_param, 5 - "Il fait 5 caractères"
+    syscall             # "Fais-le maintenant !"
+
+C'est tout ! Ces 5 lignes disent au processeur d'afficher "Hello".
+
+===============================================================================
+2. 🔧 SYNTAXE AT&T vs INTEL (COMPRENDRE LES DEUX MONDES)
+===============================================================================
+
+Il existe DEUX façons d'écrire de l'assembleur. C'est comme l'anglais vs le français
+pour dire la même chose.
+
+📝 SYNTAXE AT&T (par défaut sur Linux) :
+Caractéristiques :
+- Registres avec % devant : %rax, %rbx
+- Constantes avec $ devant : $42, $0
+- Ordre : SOURCE puis DESTINATION
+- Suffixes pour la taille : b, w, l, q
+
+Exemple AT&T :
+    movl $42, %eax      # Met 42 dans le registre eax (accumulator)
+    addl %ebx, %eax     # Ajoute ebx (base_reg) à eax (accumulator) (résultat dans eax)
+    
+Lecture : "Move (long) la valeur 42 vers le registre eax"
+
+📝 SYNTAXE INTEL (plus intuitive) :
+Caractéristiques :
+- Pas de préfixes sur les registres : rax (accumulator), rbx (base_reg)
+- Pas de $ pour les constantes : 42, 0  
+- Ordre : DESTINATION puis SOURCE
+- Taille déduite automatiquement
+
+Exemple Intel :
+    mov eax, 42         # Met 42 dans le registre eax (accumulator)
+    add eax, ebx        # Ajoute ebx (base_reg) à eax (accumulator)
+    
+Lecture : "Move 42 into eax" (plus naturel en français)
+
+🔄 CONVERSION COMPLÈTE AT&T ↔ INTEL :
+
+AT&T                    Intel               Explication
+movl $5, %eax          mov eax, 5          Met 5 dans eax (accumulator)
+addl %ebx, %eax        add eax, ebx        eax = eax + ebx (accumulator + base_reg)
+movl 8(%ebp), %edx     mov edx, [ebp+8]    edx = mémoire[ebp+8] (data_reg = [base_ptr+8])
+pushl %eax             push eax            Met eax sur la pile (push accumulator)
+popl %ebx              pop ebx             Récupère de la pile vers ebx (pop base_reg)
+
+COMMENT CHOISIR ?
+- AT&T : Si vous utilisez GAS (GNU Assembler)
+- Intel : Plus lisible, utilisable avec NASM ou ".intel_syntax noprefix"
+
+CONSEIL POUR LAYERCAKE :
+Utilisez Intel avec .intel_syntax noprefix au début de vos fichiers :
+
+    .intel_syntax noprefix  # Active la syntaxe Intel
+    
+    mov rax, 42            # mov accumulator, 42 - Maintenant on peut écrire comme ça
+    add rax, rbx           # add accumulator, base_reg - Plus facile à lire !
+
+===============================================================================
+3. 📦 LES REGISTRES EXPLIQUÉS SIMPLEMENT (VOTRE BOÎTE À OUTILS)
+===============================================================================
+
+🤔 QU'EST-CE QU'UN REGISTRE ?
+Un registre, c'est comme une variable super-rapide à l'intérieur du processeur.
+Imaginez 16 boîtes étiquetées où vous pouvez stocker des nombres instantanément.
+
+💡 ANALOGIE :
+- Registres = Tiroirs de votre bureau (accès ultra-rapide)
+- Mémoire RAM = Armoire dans la pièce (plus lent à accéder)
+- Disque dur = Entrepôt en ville (très lent à accéder)
+
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 📋 LES REGISTRES x86-64 (64 bits) EXPLIQUÉS UN PAR UN :
 
 🔢 REGISTRES GÉNÉRAUX (vos tiroirs principaux) :

@@ -17,6 +17,7 @@
 ; Contact: noel.rodrigue.7850@gmail.com for commercial licensing.
 ;===============================================================================
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 ; Include LayerCake syscall definitions and macros
 %include "src/lc_syscalls.asm"
@@ -24,6 +25,11 @@
 =======
 >>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
 >>>>>>> Stashed changes
+=======
+; Include LayerCake syscall definitions and macros
+%include "src/lc_syscalls.asm"
+
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 section .data
     hello db 'Hello, world!', 0xA  ; message with newline
     hello_len equ $ - hello
