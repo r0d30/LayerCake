@@ -1,4 +1,12 @@
+<<<<<<< Updated upstream
 MIT License with Enhanced Attribution and Commercial Restrictions
+=======
+<<<<<<< HEAD
+MIT License with Enhanced Attribution and Commercial Rights
+=======
+MIT License with Enhanced Attribution and Commercial Restrictions
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 
 Copyright (c) 2024-2025 LayerCake Project
 Original Creator: Rodrigue Noel (r0d30) <noel.rodrigue.7850@gmail.com>
@@ -11,6 +19,16 @@ Project Repository: https://github.com/r0d30/LayerCake
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "LayerCake Compiler",
 including but not limited to: source code, documentation, tools, libraries, 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+examples, and all related materials), to deal in the Software without 
+restriction, including without limitation the rights to use, copy, modify, 
+merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+and to permit persons to whom the Software is furnished to do so, subject to 
+the following conditions:
+=======
+>>>>>>> Stashed changes
 examples, and all related materials), to deal in the Software with the 
 following permissions and restrictions:
 
@@ -27,6 +45,10 @@ RESTRICTIONS:
 - ❌ Redistributing LayerCake under a different name
 - ❌ Removing or modifying attribution requirements
 - ❌ Claiming ownership of LayerCake or its original design
+<<<<<<< Updated upstream
+=======
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 
 ================================================================================
                               ATTRIBUTION REQUIREMENTS
@@ -38,7 +60,17 @@ RESTRICTIONS:
 
 2. COMPILED SOFTWARE ATTRIBUTION:
    Any software compiled using the LayerCake compiler that is distributed 
+<<<<<<< Updated upstream
    publicly must include one of the following attribution notices:
+=======
+<<<<<<< HEAD
+   publicly (including but not limited to: commercial products, open source 
+   projects, applications, libraries, tools) must include one of the following 
+   attribution notices:
+=======
+   publicly must include one of the following attribution notices:
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 
    - In software documentation: "Compiled with LayerCake Compiler"
    - In application credits/about section: "Built with LayerCake"
@@ -47,6 +79,25 @@ RESTRICTIONS:
 
 3. DERIVATIVE WORKS ATTRIBUTION:
    Any derivative compiler, language, or development tool based on LayerCake 
+<<<<<<< Updated upstream
+   must clearly indicate its relationship to LayerCake and cannot use the 
+   name "LayerCake" or confusingly similar names.
+=======
+<<<<<<< HEAD
+   must clearly indicate its relationship to LayerCake in its name, 
+   documentation, and distribution materials.
+>>>>>>> Stashed changes
+
+4. REDISTRIBUTION REQUIREMENTS:
+   Redistributions must maintain the original name "LayerCake" and cannot
+   be renamed to avoid attribution or create confusion about origin.
+
+================================================================================
+<<<<<<< Updated upstream
+                               COMMERCIAL TERMS
+=======
+                               COMMERCIAL RIGHTS
+=======
    must clearly indicate its relationship to LayerCake and cannot use the 
    name "LayerCake" or confusingly similar names.
 
@@ -56,6 +107,8 @@ RESTRICTIONS:
 
 ================================================================================
                                COMMERCIAL TERMS
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 ================================================================================
 
 1. ORIGINAL CREATOR RIGHTS:
@@ -65,6 +118,7 @@ RESTRICTIONS:
    - Create and distribute premium tools and extensions
    - License the LayerCake name and brand for commercial use
 
+<<<<<<< Updated upstream
 2. PROHIBITED COMMERCIAL ACTIVITIES:
    The following activities are explicitly prohibited without written permission:
    - ❌ Selling LayerCake compiler or any of its components
@@ -73,6 +127,30 @@ RESTRICTIONS:
    - ❌ Offering LayerCake as a paid service or SaaS platform
    - ❌ Bundling LayerCake in commercial software distributions for profit
 
+=======
+<<<<<<< HEAD
+2. COMMERCIAL USE PERMISSIONS:
+   - ✅ Use LayerCake to create commercial software
+   - ✅ Distribute LayerCake with commercial products
+   - ✅ Modify LayerCake for internal commercial use
+   - ✅ Sell services related to LayerCake development
+   - ✅ Create and sell LayerCake tutorials, books, courses
+
+3. COMMERCIAL USE RESTRICTIONS:
+   - ❌ Cannot claim ownership of the LayerCake project
+   - ❌ Cannot remove or modify attribution requirements
+   - ❌ Cannot distribute modified versions as "LayerCake" without permission
+   - ❌ Cannot use LayerCake trademarks without permission
+=======
+2. PROHIBITED COMMERCIAL ACTIVITIES:
+   The following activities are explicitly prohibited without written permission:
+   - ❌ Selling LayerCake compiler or any of its components
+   - ❌ Selling LayerCake libraries, extensions, or add-ons
+   - ❌ Creating commercial products that compete directly with LayerCake
+   - ❌ Offering LayerCake as a paid service or SaaS platform
+   - ❌ Bundling LayerCake in commercial software distributions for profit
+
+>>>>>>> Stashed changes
 3. PERMITTED COMMERCIAL ACTIVITIES:
    The following commercial activities are allowed with proper attribution:
    - ✅ Using LayerCake to develop commercial software applications
@@ -84,6 +162,10 @@ RESTRICTIONS:
 4. CLARIFICATION ON COMMERCIAL USE:
    "Commercial use" refers to selling LayerCake itself or its components.
    Using LayerCake to create commercial products is encouraged and permitted.
+<<<<<<< Updated upstream
+=======
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 
 ================================================================================
                               TRADEMARK PROTECTION

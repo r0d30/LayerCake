@@ -7,9 +7,20 @@
 ; This file is part of the LayerCake programming language project.
 ; See LICENSE file in project root for full license terms.
 ; 
+<<<<<<< Updated upstream
 ; IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 ; Attribution required for any software compiled with LayerCake.
 ; Contact: noel.rodrigue.7850@gmail.com for commercial licensing.
+=======
+<<<<<<< HEAD
+; Attribution required for any software compiled with LayerCake.
+; Commercial licensing available - contact: noel.rodrigue.7850@gmail.com
+=======
+; IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
+; Attribution required for any software compiled with LayerCake.
+; Contact: noel.rodrigue.7850@gmail.com for commercial licensing.
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 ;===============================================================================
 
 ; File: [FILENAME]

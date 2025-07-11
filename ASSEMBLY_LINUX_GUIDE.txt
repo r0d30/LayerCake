@@ -3,12 +3,35 @@
                               Pour le projet LayerCake
 ===============================================================================
 
+<<<<<<< Updated upstream
 LayerCake Compiler Assembly Guide - Version Détaillée
+=======
+<<<<<<< HEAD
+=======
+LayerCake Compiler Assembly Guide
+>>>>>>> Stashed changes
 Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
 Licensed under MIT License with Enhanced Attribution
 
 IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 See LICENSE file for full terms and restrictions.
+<<<<<<< Updated upstream
+=======
+
+===============================================================================
+
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+SOMMAIRE :
+1. Concepts de base
+2. Syntaxe AT&T vs Intel
+3. Registres et conventions d'appel
+4. Appels système (syscalls)
+5. Structure d'un programme
+6. Gestion de la mémoire
+7. Outils de développement
+8. Debugging et optimisation
+9. Bonnes pratiques pour LayerCake
+>>>>>>> Stashed changes
 
 ===============================================================================
 

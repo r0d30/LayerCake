@@ -5,10 +5,19 @@
 Copyright (c) 2024-2025 LayerCake Project
 Original Creator: Rodrigue Noel (r0d30)
 Licensed under MIT License with Enhanced Attribution
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 
 IMPORTANT: Commercial sale of LayerCake compiler, its libraries, 
 or renamed forks is STRICTLY PROHIBITED without written permission.
 Attribution required for all derived works.
+<<<<<<< Updated upstream
+=======
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 ```
 
 ## Component-Specific Copyrights
@@ -83,6 +92,26 @@ Licensed under Creative Commons Attribution 4.0 International License
 ## Trademark Information
 ```
 "LayerCake" and related marks are trademarks of Rodrigue Noel (r0d30)
+<<<<<<< Updated upstream
+Commercial sale of LayerCake compiler or libraries is PROHIBITED
+Renaming LayerCake to avoid attribution is PROHIBITED
+Usage requires proper attribution and compliance with license terms
+See LICENSE file for detailed restrictions and commercial rights
+=======
+<<<<<<< HEAD
+Usage requires permission for commercial purposes
+See LICENSE file for detailed trademark terms
+>>>>>>> Stashed changes
+```
+
+## Commercial Rights Summary
+- **Original Creator**: Retains all commercial licensing rights for LayerCake
+- **Contributors**: Credited for contributions, bound by license terms
+<<<<<<< Updated upstream
+=======
+- **Users**: Free to use under MIT license terms with attribution
+- **Commercial Users**: Must follow attribution requirements
+=======
 Commercial sale of LayerCake compiler or libraries is PROHIBITED
 Renaming LayerCake to avoid attribution is PROHIBITED
 Usage requires proper attribution and compliance with license terms
@@ -92,10 +121,15 @@ See LICENSE file for detailed restrictions and commercial rights
 ## Commercial Rights Summary
 - **Original Creator**: Retains all commercial licensing rights for LayerCake
 - **Contributors**: Credited for contributions, bound by license terms
+>>>>>>> Stashed changes
 - **Users**: Free to use, modify, and distribute under license terms with attribution
 - **Commercial Restriction**: Selling LayerCake compiler, libraries, or renamed forks is PROHIBITED
 - **Attribution Required**: All derived works must credit LayerCake and retain copyright notices
 - **No Renaming**: Creating renamed copies of LayerCake to avoid attribution is PROHIBITED
+<<<<<<< Updated upstream
+=======
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 
 ## Legal Contact
 For copyright, licensing, or legal questions:

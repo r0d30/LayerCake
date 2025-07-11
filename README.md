@@ -4,7 +4,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT%20Enhanced-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20x64-green.svg)](#)
+<<<<<<< Updated upstream
 [![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](#)
+=======
+<<<<<<< HEAD
+=======
+[![Non-Commercial](https://img.shields.io/badge/Commercial%20Sale-PROHIBITED-red.svg)](LICENSING.md)
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 
 ---
 
@@ -148,11 +155,120 @@ LayerCake/
 └── Makefile              # Build system
 ```
 
+<<<<<<< Updated upstream
 ### File Status
 - **src/main.asm**: "Hello World" test program with official macros
 - **src/LC_core/lc_syscalls.asm**: 1000+ lines of assembly macros
 - **ASSEMBLY_LINUX_GUIDE.txt**: Complete guide (2400+ lines)
 - **Makefile**: Linux/WSL optimized build system
+=======
+## 🤝 Contributing
+
+We welcome contributions! Please see:
+- **[Contributors Guide](CONTRIBUTORS.md)** - How to contribute
+- **[Copyright Info](COPYRIGHT.md)** - Legal information
+- **Code Style**: Follow existing assembly conventions
+- **Testing**: All changes must include tests
+
+### Contribution Process
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for your changes
+4. Ensure all tests pass
+5. Submit a pull request
+
+## 📜 Legal & Licensing
+
+### Open Source License
+<<<<<<< HEAD
+LayerCake is licensed under **MIT License with Enhanced Attribution**:
+- ✅ **Free to use** for any purpose
+- ✅ **Free to modify** and distribute as LayerCake
+- ❌ **Commercial sale** of LayerCake or its libraries requires permission
+- ✅ **No payment required** for use and modification
+
+### Attribution Requirements
+- Software compiled with LayerCake must credit LayerCake
+- Derivative works must acknowledge LayerCake
+- Commercial products should include LayerCake attribution
+
+### Commercial Rights
+The original creator retains exclusive rights to:
+- Commercial licensing alternatives
+- Official support and consulting  
+- Premium tools and extensions
+- LayerCake trademark usage
+
+**See [LICENSE](LICENSE) for complete terms.**
+=======
+LayerCake is licensed under **MIT License with Enhanced Attribution and Commercial Restrictions**:
+- ✅ **Free to use** for personal, educational, and research purposes
+- ✅ **Free to modify** and redistribute as LayerCake
+- ✅ **Commercial application development** permitted with LayerCake
+- ❌ **Commercial sale** of LayerCake itself or its libraries prohibited
+- ❌ **Renaming** or rebranding LayerCake prohibited
+
+### Attribution Requirements
+- Software compiled with LayerCake must credit LayerCake
+- Derivative works must acknowledge LayerCake origin
+- Redistributions must maintain the LayerCake name
+- Commercial products built with LayerCake should include attribution
+
+### Commercial Rights
+The original creator retains exclusive rights to:
+- Commercial licensing of LayerCake itself
+- Official support and consulting services  
+- Premium tools and extensions development
+- LayerCake trademark and branding usage
+
+**See [LICENSE](LICENSE) for complete legal terms and [LICENSING.md](LICENSING.md) for quick reference.**
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+
+## 💰 Commercial Services
+
+For businesses requiring:
+- **Premium Support** with SLA guarantees
+- **Custom Development** and consulting
+- **Commercial Licensing** without attribution
+- **Training and Certification** programs
+
+Contact: **noel.rodrigue.7850@gmail.com**
+
+## 📞 Contact & Community
+
+- **GitHub Issues**: Bug reports and feature requests
+- **Discussions**: Community Q&A and ideas
+- **Email**: noel.rodrigue.7850@gmail.com
+- **Business**: noel.rodrigue.7850@gmail.com
+
+## 🎯 Roadmap
+
+### Current Status: **v1.0.0 - Foundation Release** 🎉
+- [x] Project architecture defined
+- [x] Legal framework established  
+- [x] Development environment ready
+- [x] Complete documentation suite
+- [x] GPG signing configured
+- [x] MIT License with Enhanced Attribution
+- [ ] Lexer implementation
+- [ ] Parser implementation
+- [ ] Code generation
+- [ ] First compiled program
+
+### Upcoming Milestones
+- **v1.1**: Basic lexer functionality
+- **v1.2**: Parser implementation
+- **v1.3**: Code generation  
+- **v2.0**: First working compiler
+
+See **[src/tasks.txt](src/tasks.txt)** for detailed roadmap.
+
+## 🏆 Acknowledgments
+
+- **Original Creator**: Rodrigue Noel (r0d30) - Project founder and architect
+- **Community**: All contributors and supporters
+- **Inspiration**: C, Rust, Python, and the assembly language community
+>>>>>>> Stashed changes
 
 ---
 

@@ -1,3 +1,9 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+# Makefile pour projet assembleur Linux
+=======
+>>>>>>> Stashed changes
 # LayerCake Compiler Makefile
 # Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
 # Licensed under MIT License with Enhanced Attribution
@@ -5,10 +11,14 @@
 # IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 # See LICENSE file for full terms and restrictions.
 
+<<<<<<< Updated upstream
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
+=======
+>>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
+>>>>>>> Stashed changes
 AS = nasm
 ASFLAGS = -f elf64
 LD = ld
