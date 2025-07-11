@@ -5,6 +5,10 @@
 # IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 # See LICENSE file for full terms and restrictions.
 
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
 AS = nasm
 ASFLAGS = -f elf64
 LD = ld
@@ -15,31 +19,27 @@ CC = gcc
 # =============================================================================
 
 # Nom du programme (sans extension)
-PROG_NAME ?= default_name
+PROG_NAME ?= LayerCake
 
 # Répertoires
 SRCDIR = src
 BUILDDIR = build
 OBJDIR = $(BUILDDIR)/obj
 
-# Fichiers
-SOURCES = $(wildcard $(SRCDIR)/*.asm)
+# Fichiers sources
+SOURCES = $(filter-out $(SRCDIR)/main_win.asm,$(wildcard $(SRCDIR)/*.asm))
+
+# Configuration
 OBJECTS = $(patsubst $(SRCDIR)/%.asm,$(OBJDIR)/%.o,$(SOURCES))
-TARGET = $(BUILDDIR)/$(PROG_NAME).elf
+TARGET = $(BUILDDIR)/$(PROG_NAME)
 
 # =============================================================================
-# CIBLES PRINCIPALES
+# CIBLES DE COMPILATION
 # =============================================================================
 
-.PHONY: all build run run_debug clean help
+.PHONY: build run debug
 
-all: build
-
-# Nettoyer le répertoire build
-clean:
-	rm -rf $(BUILDDIR)
-
-# Construction de l'ELF
+# Construction du programme
 build: $(TARGET)
 
 $(TARGET): $(OBJECTS)
@@ -59,24 +59,51 @@ run: build
 	@echo "-- Exécution de $(TARGET) --"
 	$(TARGET)
 
-# Exécuter avec GDB pour le débogage
-run_debug: build
+# Déboguer avec GDB
+debug: build
 	@echo "-- Débogage de $(TARGET) avec GDB --"
 	gdb $(TARGET)
 
+# =============================================================================
+# CIBLES GÉNÉRALES
+# =============================================================================
+
+.PHONY: all clean help dev test
+
+# Cible par défaut
+all: build
+
+# Raccourci développement : compile et exécute
+dev: build run
+
+# Raccourci test rapide : nettoie, compile et exécute
+test: clean build run
+
+# Nettoyer le répertoire build
+clean:
+	rm -rf $(BUILDDIR)
+
 # Afficher l'aide
 help:
-	@echo "Cibles disponibles:"
-	@echo "  build      - Compile le programme"
-	@echo "  run        - Compile et exécute le programme"
-	@echo "  run_debug  - Compile et lance le programme avec GDB"
-	@echo "  clean      - Nettoie les fichiers de compilation"
-	@echo "  help       - Affiche cette aide"
+	@echo "=== LayerCake Compiler - Aide ==="
+	@echo ""
+	@echo "Cibles principales:"
+	@echo "  dev          - Compile et exécute rapidement"
+	@echo "  test         - Clean + compile + exécute"
+	@echo "  build        - Compile le programme"
+	@echo "  run          - Compile et exécute"
+	@echo "  debug        - Compile et lance GDB"
+	@echo "  clean        - Nettoie les fichiers de compilation"
 	@echo ""
 	@echo "Variables:"
-	@echo "  PROG_NAME  - Nom du programme (défaut: default_name)"
+	@echo "  PROG_NAME  - Nom du programme (défaut: LayerCake)"
 	@echo ""
-	@echo "Exemples:"
-	@echo "  make run PROG_NAME=monprog"
-	@echo "  make build"
-	@echo "  make clean"
+	@echo "Exemples d'utilisation:"
+	@echo "  wsl make dev                          # Développement rapide"
+	@echo "  wsl make test                         # Test complet"
+	@echo "  wsl make build run                    # Compile puis exécute"
+	@echo "  wsl make dev PROG_NAME=monprog        # Avec nom custom"
+	@echo "  wsl make clean                        # Nettoie tout"
+	@echo ""
+	@echo "Fichiers générés:"
+	@echo "  build/PROG_NAME - Exécutable Linux"
