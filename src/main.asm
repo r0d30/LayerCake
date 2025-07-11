@@ -12,6 +12,9 @@
 ; Contact: noel.rodrigue.7850@gmail.com for commercial licensing.
 ;===============================================================================
 
+; Include LayerCake syscall definitions and macros
+%include "src/lc_syscalls.asm"
+
 section .data
     hello db 'Hello, world!', 0xA  ; message with newline
     hello_len equ $ - hello
@@ -20,14 +23,14 @@ section .text
     global _start
 
 _start:
-    ; write(1, hello, hello_len)
-    mov eax, 4          ; syscall number for sys_write
-    mov ebx, 1          ; file descriptor 1 = stdout
-    mov ecx, hello      ; pointer to message
-    mov edx, hello_len  ; message length
-    int 0x80            ; call kernel
+    ; write(stdout, hello, hello_len) - using official architecture names
+    mov syscall_num, sys_write              ; system call number for write
+    mov first_param, stdout_fd              ; file descriptor for standard output
+    mov second_param, hello                 ; pointer to message
+    mov third_param, hello_len              ; message length
+    syscall                                 ; invoke system call
 
-    ; exit(0)
-    mov eax, 1          ; syscall number for sys_exit
-    xor ebx, ebx        ; exit code 0
-    int 0x80
+    ; exit(0) - using official architecture names  
+    mov syscall_num, sys_exit               ; system call number for exit
+    mov first_param, exit_success           ; exit code for success
+    syscall
