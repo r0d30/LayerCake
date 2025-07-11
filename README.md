@@ -4,6 +4,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT%20Enhanced-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20x64-green.svg)](#)
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 [![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](#)
 =======
@@ -12,6 +13,9 @@
 [![Non-Commercial](https://img.shields.io/badge/Commercial%20Sale-PROHIBITED-red.svg)](LICENSING.md)
 >>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
 >>>>>>> Stashed changes
+=======
+[![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](#)
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 
 ---
 
@@ -155,12 +159,16 @@ LayerCake/
 └── Makefile              # Build system
 ```
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 ### File Status
 - **src/main.asm**: "Hello World" test program with official macros
 - **src/LC_core/lc_syscalls.asm**: 1000+ lines of assembly macros
 - **ASSEMBLY_LINUX_GUIDE.txt**: Complete guide (2400+ lines)
 - **Makefile**: Linux/WSL optimized build system
+<<<<<<< HEAD
 =======
 ## 🤝 Contributing
 
@@ -269,6 +277,8 @@ See **[src/tasks.txt](src/tasks.txt)** for detailed roadmap.
 - **Community**: All contributors and supporters
 - **Inspiration**: C, Rust, Python, and the assembly language community
 >>>>>>> Stashed changes
+=======
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 
 ---
 

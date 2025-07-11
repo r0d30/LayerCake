@@ -11,14 +11,20 @@
 # IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 # See LICENSE file for full terms and restrictions.
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
+=======
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
+<<<<<<< HEAD
 =======
 >>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
 >>>>>>> Stashed changes
+=======
+>>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 AS = nasm
 ASFLAGS = -f elf64
 LD = ld
