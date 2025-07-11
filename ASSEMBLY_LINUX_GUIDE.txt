@@ -1,9 +1,9 @@
 ===============================================================================
-                    GUIDE DE DÉVELOPPEMENT EN ASSEMBLEUR LINUX
+                    GUIDE COMPLET D'ASSEMBLEUR LINUX POUR DÉBUTANTS
                               Pour le projet LayerCake
 ===============================================================================
 
-LayerCake Compiler Assembly Guide
+LayerCake Compiler Assembly Guide - Version Détaillée
 Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
 Licensed under MIT License with Enhanced Attribution
 
@@ -12,281 +12,2406 @@ See LICENSE file for full terms and restrictions.
 
 ===============================================================================
 
-SOMMAIRE :
-1. Concepts de base
-2. Syntaxe AT&T vs Intel
-3. Registres et conventions d'appel
-4. Appels système (syscalls)
-5. Structure d'un programme
-6. Gestion de la mémoire
-7. Outils de développement
-8. Debugging et optimisation
-9. Bonnes pratiques pour LayerCake
+🎯 OBJECTIF DE CE GUIDE :
+Ce guide vous apprend l'assembleur Linux x86-64 étape par étape, avec de nombreux
+exemples pratiques. Même si vous n'avez jamais fait d'assembleur, vous devriez
+pouvoir suivre et comprendre chaque concept.
+
+✨ NOUVEAUTÉ LAYERCAKE : MACROS OFFICIELLES
+Ce guide utilise maintenant les macros LayerCake qui remplacent les nombres
+cryptiques par les vrais noms architecturaux officiels ! 
+
+Exemples de transformation :
+- mov rax, 1     →  mov syscall_num, sys_write
+- mov rdi, 1     →  mov first_param, stdout_fd
+- mov rax, 60    →  mov syscall_num, sys_exit
+
+Ces macros sont définies dans src/LC_core/lc_syscalls.asm et suivent les
+documentations officielles Intel x86-64 et POSIX/Linux.
 
 ===============================================================================
-1. CONCEPTS DE BASE
-===============================================================================
 
-L'assembleur Linux utilise la syntaxe AT&T par défaut (GNU Assembler - gas).
-
-DIFFÉRENCES PRINCIPALES :
-- Suffixes de taille : b (byte), w (word), l (long), q (quad)
-- Ordre des opérandes : source, destination
-- Préfixes : % pour registres, $ pour constantes
-- Adressage : displacement(%base,%index,scale)
-
-EXEMPLE :
-    movl $42, %eax          # Charge 42 dans EAX
-    movl %eax, variable     # Sauvegarde EAX dans variable
-
-===============================================================================
-2. SYNTAXE AT&T vs INTEL
-===============================================================================
-
-AT&T (utilisée par gas) :
-    movl $5, %eax           # eax = 5
-    addl %ebx, %eax         # eax = eax + ebx
-    movl 8(%ebp), %edx      # edx = *(ebp + 8)
-
-Intel (plus lisible, utilisable avec .intel_syntax) :
-    mov eax, 5              # eax = 5
-    add eax, ebx            # eax = eax + ebx
-    mov edx, [ebp + 8]      # edx = *(ebp + 8)
-
-CONSEIL : Utilise .intel_syntax noprefix au début pour plus de clarté.
+SOMMAIRE DÉTAILLÉ :
+1. 🧠 Qu'est-ce que l'assembleur ? (Les bases absolues)
+2. 🔧 Syntaxe AT&T vs Intel (Comprendre les deux mondes)
+3. 📦 Les registres expliqués simplement (Votre boîte à outils)
+4. 🤝 Conventions d'appel (Comment les fonctions se parlent)
+5. 🔌 Appels système (Parler au noyau Linux)
+6. 🏗️ Structure d'un programme (Architecture complète)
+7. 🧮 Gestion de la mémoire (Stack, heap et compagnie)
+8. 🛠️ Outils de développement (Votre arsenal)
+9. 🐛 Debugging et optimisation (Chasser les bugs)
+10. ✨ Bonnes pratiques pour LayerCake (Code professionnel)
+11. 📚 Exemples complets (Mini-programmes commentés)
+12. 📖 Instructions assembleur détaillées (Comprendre chaque détail)
+13. 🎯 Optimisations avancées (Rendre votre code ultra-rapide)
+14. 🔍 Debugging avancé (Techniques professionnelles pour chasser les bugs)
+15. 🎯 Instructions avancées et leurs macros officielles (Référence complète)
+15. 🎯 Instructions avancées et leurs macros officielles (Optimisations puissantes)
+16. 📚 Guide complet des macros officielles LayerCake (Utilisation pratique)
 
 ===============================================================================
-3. REGISTRES ET CONVENTIONS D'APPEL
+1. 🧠 QU'EST-CE QUE L'ASSEMBLEUR ? (LES BASES ABSOLUES)
 ===============================================================================
 
-REGISTRES x86-64 :
-- RAX/EAX : Accumulateur, valeur de retour
-- RBX/EBX : Base (callee-saved)
-- RCX/ECX : Compteur
-- RDX/EDX : Données
-- RSI/ESI : Source index
-- RDI/EDI : Destination index
-- RBP/EBP : Base pointer (frame pointer)
-- RSP/ESP : Stack pointer
-- R8-R15 : Registres additionnels (x86-64)
+ANALOGIE SIMPLE :
+Imaginez que votre processeur est un ouvrier très spécialisé qui ne comprend
+que des instructions ultra-simples comme :
+- "Prends ce nombre et mets-le dans cette boîte"
+- "Additionne ces deux nombres"
+- "Va à cette adresse si cette condition est vraie"
 
-CONVENTION D'APPEL System V (Linux x86-64) :
-- Arguments : RDI, RSI, RDX, RCX, R8, R9, puis stack
-- Retour : RAX (RDX pour 128-bit)
-- Callee-saved : RBX, RBP, R12-R15
-- Caller-saved : RAX, RCX, RDX, RSI, RDI, R8-R11
+L'assembleur, c'est le langage pour donner ces instructions simples.
+
+QU'EST-CE QUE LE PROCESSEUR COMPREND VRAIMENT ?
+Le processeur ne comprend que des nombres binaires (0 et 1). Par exemple :
+- 01001000 11000111 11000000 00000000 00000000 = "mov rax, 0"
+
+L'assembleur traduit des mots humains en ces nombres binaires :
+- mov rax, 0  →  (assembleur traduit)  →  01001000 11000111...
+
+POURQUOI ÉCRIRE EN ASSEMBLEUR ?
+1. CONTRÔLE TOTAL : Vous contrôlez exactement ce que fait le processeur
+2. PERFORMANCE : Pas d'intermédiaire, code ultra-rapide
+3. TAILLE : Programmes très petits
+4. COMPRÉHENSION : Vous comprenez vraiment comment marche un ordinateur
+
+EXEMPLE CONCRET - "Hello World" le plus simple possible :
+    # Ceci dit au processeur d'écrire "Hello" à l'écran
+    mov rax, 1          # mov syscall_num, sys_write - "Je veux écrire quelque chose"
+    mov rdi, 1          # mov first_param, stdout_fd - "Sur l'écran principal"  
+    mov rsi, message    # mov second_param, message - "Voici où est mon texte"
+    mov rdx, 5          # mov third_param, 5 - "Il fait 5 caractères"
+    syscall             # "Fais-le maintenant !"
+
+C'est tout ! Ces 5 lignes disent au processeur d'afficher "Hello".
 
 ===============================================================================
-4. APPELS SYSTÈME (SYSCALLS)
+2. 🔧 SYNTAXE AT&T vs INTEL (COMPRENDRE LES DEUX MONDES)
 ===============================================================================
 
-SYSCALLS LINUX x86-64 :
-- Numéro syscall dans RAX
-- Arguments dans RDI, RSI, RDX, R10, R8, R9
-- Instruction : syscall
-- Retour dans RAX (valeur négative = erreur)
+Il existe DEUX façons d'écrire de l'assembleur. C'est comme l'anglais vs le français
+pour dire la même chose.
 
-SYSCALLS ESSENTIELS :
-- sys_read (0) : Lire depuis un fd
-- sys_write (1) : Écrire vers un fd
-- sys_open (2) : Ouvrir fichier
-- sys_close (3) : Fermer fd
-- sys_exit (60) : Terminer programme
-- sys_mmap (9) : Allouer mémoire
-- sys_munmap (11) : Libérer mémoire
+📝 SYNTAXE AT&T (par défaut sur Linux) :
+Caractéristiques :
+- Registres avec % devant : %rax, %rbx
+- Constantes avec $ devant : $42, $0
+- Ordre : SOURCE puis DESTINATION
+- Suffixes pour la taille : b, w, l, q
 
-EXEMPLE - Écrire "Hello" :
-    mov rax, 1              # sys_write
-    mov rdi, 1              # stdout
-    mov rsi, msg            # buffer
-    mov rdx, 5              # taille
+Exemple AT&T :
+    movl $42, %eax      # Met 42 dans le registre eax (accumulator)
+    addl %ebx, %eax     # Ajoute ebx (base_reg) à eax (accumulator) (résultat dans eax)
+    
+Lecture : "Move (long) la valeur 42 vers le registre eax"
+
+📝 SYNTAXE INTEL (plus intuitive) :
+Caractéristiques :
+- Pas de préfixes sur les registres : rax (accumulator), rbx (base_reg)
+- Pas de $ pour les constantes : 42, 0  
+- Ordre : DESTINATION puis SOURCE
+- Taille déduite automatiquement
+
+Exemple Intel :
+    mov eax, 42         # Met 42 dans le registre eax (accumulator)
+    add eax, ebx        # Ajoute ebx (base_reg) à eax (accumulator)
+    
+Lecture : "Move 42 into eax" (plus naturel en français)
+
+🔄 CONVERSION COMPLÈTE AT&T ↔ INTEL :
+
+AT&T                    Intel               Explication
+movl $5, %eax          mov eax, 5          Met 5 dans eax (accumulator)
+addl %ebx, %eax        add eax, ebx        eax = eax + ebx (accumulator + base_reg)
+movl 8(%ebp), %edx     mov edx, [ebp+8]    edx = mémoire[ebp+8] (data_reg = [base_ptr+8])
+pushl %eax             push eax            Met eax sur la pile (push accumulator)
+popl %ebx              pop ebx             Récupère de la pile vers ebx (pop base_reg)
+
+COMMENT CHOISIR ?
+- AT&T : Si vous utilisez GAS (GNU Assembler)
+- Intel : Plus lisible, utilisable avec NASM ou ".intel_syntax noprefix"
+
+CONSEIL POUR LAYERCAKE :
+Utilisez Intel avec .intel_syntax noprefix au début de vos fichiers :
+
+    .intel_syntax noprefix  # Active la syntaxe Intel
+    
+    mov rax, 42            # mov accumulator, 42 - Maintenant on peut écrire comme ça
+    add rax, rbx           # add accumulator, base_reg - Plus facile à lire !
+
+===============================================================================
+3. 📦 LES REGISTRES EXPLIQUÉS SIMPLEMENT (VOTRE BOÎTE À OUTILS)
+===============================================================================
+
+🤔 QU'EST-CE QU'UN REGISTRE ?
+Un registre, c'est comme une variable super-rapide à l'intérieur du processeur.
+Imaginez 16 boîtes étiquetées où vous pouvez stocker des nombres instantanément.
+
+💡 ANALOGIE :
+- Registres = Tiroirs de votre bureau (accès ultra-rapide)
+- Mémoire RAM = Armoire dans la pièce (plus lent à accéder)
+- Disque dur = Entrepôt en ville (très lent à accéder)
+
+📋 LES REGISTRES x86-64 (64 bits) EXPLIQUÉS UN PAR UN :
+
+🔢 REGISTRES GÉNÉRAUX (vos tiroirs principaux) :
+
+RAX (Accumulator) - Macro: accumulator :
+- RÔLE : Résultats de calculs, valeur de retour des fonctions
+- UTILISATION : math, retour de fonction
+- EXEMPLE : Une calculatrice affiche le résultat ici
+    mov rax, 10             # mov accumulator, 10
+    add rax, 5              # add accumulator, 5  (rax contient maintenant 15)
+
+RBX (Base) - Macro: base_reg :
+- RÔLE : Stockage général, pointeur vers des données
+- UTILISATION : Garder une adresse importante
+- EXEMPLE : Pointer vers un tableau
+    mov rbx, mon_tableau    # mov base_reg, mon_tableau (rbx pointe vers le tableau)
+    mov rax, [rbx]          # mov accumulator, [base_reg] (lit le premier élément)
+
+RCX (Counter) - Macro: counter :
+- RÔLE : Compteur pour les boucles
+- UTILISATION : boucles, répétitions
+- EXEMPLE : Compter jusqu'à 10
+    mov rcx, 10             # mov counter, 10
+    boucle:
+        dec rcx             # dec counter (rcx = rcx - 1)
+        jnz boucle          # recommence si rcx ≠ 0
+
+RDX (Data) - Macro: data_reg :
+- RÔLE : Données supplémentaires, calculs étendus
+- UTILISATION : multiplication/division, données
+- EXEMPLE : Division (quotient dans rax, reste dans rdx)
+
+RSI (Source Index) - Macro: source_index :
+- RÔLE : Pointeur vers la SOURCE dans les copies
+- UTILISATION : copier des données (source)
+- EXEMPLE : Copier une chaîne
+    mov rsi, source_string  # mov source_index, source_string (d'où on copie)
+    mov rdi, dest_string    # mov dest_index, dest_string (où on copie)
+    movsb                   # move_string_byte - copie un byte
+
+RDI (Destination Index) - Macro: dest_index :
+- RÔLE : Pointeur vers la DESTINATION dans les copies
+- UTILISATION : copier des données (destination)
+- PREMIER ARGUMENT dans les appels de fonction
+
+🔧 REGISTRES SPÉCIAUX :
+
+RSP (Stack Pointer) - Macro: stack_ptr :
+- RÔLE : Pointe vers le SOMMET de la pile
+- UTILISATION : gestion automatique de la pile
+- ATTENTION : Ne jamais modifier directement !
+    push rax        # push accumulator (rsp diminue automatiquement)
+    pop rbx         # pop base_reg (rsp augmente automatiquement)
+
+RBP (Base Pointer) - Macro: base_ptr :
+- RÔLE : "Ancre" pour accéder aux variables locales
+- UTILISATION : frame de fonction
+- EXEMPLE : Accéder aux paramètres
+    push rbp            # push base_ptr
+    mov rbp, rsp        # mov base_ptr, stack_ptr (nouvelle frame)
+    mov rax, [rbp+16]   # mov accumulator, [base_ptr+16] (premier paramètre)
+
+🎯 REGISTRES ÉTENDUS (bonus x86-64) :
+R8 (ext_reg8), R9 (ext_reg9), R10 (ext_reg10), R11 (ext_reg11), R12 (ext_reg12), R13 (ext_reg13), R14 (ext_reg14), R15 (ext_reg15)
+- RÔLE : Registres supplémentaires pour plus de stockage
+- R8 et R9 : souvent utilisés pour les paramètres de fonction
+
+🔄 TAILLES DE REGISTRES (important !) :
+
+Un registre 64-bit contient plusieurs "sous-registres" :
+
+RAX (64-bit)  = tout le registre       [████████████████]
+EAX (32-bit)  = moitié basse           [........████████]  
+AX  (16-bit)  = quart bas              [............████]
+AL  (8-bit)   = huitième bas           [..............██]
+AH  (8-bit)   = bits 8-15             [............██..]
+
+EXEMPLE CONCRET :
+    mov rax, 0x123456789ABCDEF0    # mov accumulator, 0x123456789ABCDEF0 - RAX = tout
+    # EAX contient maintenant 0x9ABCDEF0
+    # AX contient maintenant 0xDEF0  
+    # AL contient maintenant 0xF0
+    # AH contient maintenant 0xDE
+
+⚠️ ATTENTION PIÈGE :
+Quand vous écrivez dans EAX (32-bit), ça MET À ZÉRO la partie haute de RAX !
+
+    mov rax, 0x123456789ABCDEF0    # mov accumulator, 0x123456789ABCDEF0 - rax = 0x123456789ABCDEF0
+    mov eax, 0                     # rax = 0x0000000000000000 !
+
+===============================================================================
+4. 🤝 CONVENTIONS D'APPEL (COMMENT LES FONCTIONS SE PARLENT)
+===============================================================================
+
+🤔 QU'EST-CE QU'UNE CONVENTION D'APPEL ?
+C'est un "contrat" entre fonctions qui dit :
+- Où mettre les paramètres quand on appelle une fonction
+- Où trouver la valeur de retour
+- Quels registres peuvent être modifiés
+
+🌍 POURQUOI C'EST IMPORTANT ?
+Sans ça, ce serait l'anarchie ! Imaginez :
+- Fonction A met les paramètres dans RAX
+- Fonction B les attend dans RDI
+- = CATASTROPHE !
+
+📜 CONVENTION SYSTEM V (Linux x86-64) :
+
+Cette convention dit exactement où mettre chaque chose :
+
+🎯 PARAMÈTRES D'ENTRÉE (dans l'ordre) :
+1er paramètre  → RDI (first_param / dest_index)
+2ème paramètre → RSI (second_param / source_index)
+3ème paramètre → RDX (third_param / data_reg)
+4ème paramètre → RCX (fourth_param / counter) - ATTENTION: pour syscalls c'est R10!
+5ème paramètre → R8 (fifth_param / ext_reg8)
+6ème paramètre → R9 (sixth_param / ext_reg9)
+7ème+ paramètres → Sur la pile (stack_ptr)
+
+📤 VALEUR DE RETOUR :
+Résultat → RAX (return_value / accumulator) ou RDX:RAX si 128-bit
+
+🔒 REGISTRES "CALLEE-SAVED" (la fonction DOIT les préserver) :
+RBX (base_reg), RBP (base_ptr), R12 (ext_reg12), R13 (ext_reg13), R14 (ext_reg14), R15 (ext_reg15), RSP (stack_ptr)
+= Si votre fonction utilise ces registres, elle DOIT les remettre comme avant
+
+🔓 REGISTRES "CALLER-SAVED" (peuvent être détruits) :
+RAX (accumulator), RCX (counter), RDX (data_reg), RSI (source_index), RDI (dest_index), R8 (ext_reg8), R9 (ext_reg9), R10 (ext_reg10), R11 (ext_reg11)
+= La fonction peut les modifier sans prévenir
+
+📚 EXEMPLE COMPLET - Fonction addition :
+
+Déclaration C équivalente : int addition(int a, int b)
+
+    # Fonction : addition de deux nombres
+    # Paramètres : RDI = premier nombre, RSI = deuxième nombre  
+    # Retour : RAX = somme
+    addition:
+        # Pas besoin de sauvegarder RDI/RSI (caller-saved)
+        add rdi, rsi        # add first_param, second_param - rdi = rdi + rsi
+        mov rax, rdi        # mov accumulator, first_param - met le résultat dans rax pour le retour
+        ret                 # retourne à l'appelant
+
+Appel de cette fonction :
+    # Appeler addition(10, 5)
+    mov rdi, 10         # mov first_param, 10 - 1er paramètre = 10
+    mov rsi, 5          # mov second_param, 5 - 2ème paramètre = 5
+    call addition       # appelle la fonction
+    # Maintenant rax (accumulator) contient 15
+
+📚 EXEMPLE PLUS COMPLEXE - Fonction avec sauvegarde :
+
+    # Fonction qui utilise des registres callee-saved
+    ma_fonction:
+        push rbx            # push base_reg - DOIT sauvegarder rbx
+        push r12            # push ext_reg12 - DOIT sauvegarder r12
+        
+        # Utilisation normale
+        mov rbx, rdi        # mov base_reg, first_param - utilise rbx
+        mov r12, rsi        # mov ext_reg12, second_param - utilise r12
+        add rbx, r12        # add base_reg, ext_reg12 - calcul quelconque
+        mov rax, rbx        # mov accumulator, base_reg - résultat
+        
+        pop r12             # pop ext_reg12 - DOIT restaurer r12
+        pop rbx             # pop base_reg - DOIT restaurer rbx
+        ret
+
+🎯 EXEMPLE AVEC 7+ PARAMÈTRES :
+
+Déclaration C : int somme7(int a,int b,int c,int d,int e,int f,int g)
+
+    somme7:
+        # a=rdi, b=rsi, c=rdx, d=rcx, e=r8, f=r9
+        # g = [rsp+8] (premier paramètre sur la pile)
+        
+        add rdi, rsi        # a + b
+        add rdi, rdx        # + c  
+        add rdi, rcx        # + d
+        add rdi, r8         # + e
+        add rdi, r9         # + f
+        add rdi, [rsp+8]    # + g (depuis la pile)
+        mov rax, rdi        # résultat dans rax
+        ret
+
+Appel :
+    mov rdi, 1          # a = 1
+    mov rsi, 2          # b = 2  
+    mov rdx, 3          # c = 3
+    mov rcx, 4          # d = 4
+    mov r8, 5           # e = 5
+    mov r9, 6           # f = 6
+    push 7              # g = 7 (sur la pile)
+    call somme7
+    add rsp, 8          # nettoie la pile (enlève le 7)
+    # rax contient 28
+
+💡 MÉMO RAPIDE :
+- RDI, RSI, RDX, RCX, R8, R9 = paramètres (dans l'ordre)
+- RAX = retour
+- RBX, RBP, R12-R15 = à sauvegarder si utilisés
+- Autres = peuvent être détruits
+
+===============================================================================
+5. 🔌 APPELS SYSTÈME (PARLER AU NOYAU LINUX)
+===============================================================================
+
+🤔 QU'EST-CE QU'UN APPEL SYSTÈME ?
+Votre programme s'exécute dans un "bac à sable" sécurisé. Pour faire des choses
+importantes (lire fichier, afficher texte, allouer mémoire), il doit demander
+gentiment au noyau Linux.
+
+🏢 ANALOGIE :
+- Votre programme = employé dans une entreprise
+- Noyau Linux = directeur de l'entreprise  
+- Syscall = demande officielle au directeur
+
+Employé : "Monsieur le directeur, puis-je accéder au fichier X ?"
+Directeur : "Oui, voici le contenu" ou "Non, accès refusé"
+
+📋 MÉCANISME DES SYSCALLS x86-64 :
+
+1. Mettre le NUMÉRO du syscall dans RAX (syscall_num)
+2. Mettre les PARAMÈTRES dans RDI (first_param), RSI (second_param), RDX (third_param), R10 (fourth_param), R8 (fifth_param), R9 (sixth_param)
+3. Exécuter l'instruction "syscall"
+4. Récupérer le RÉSULTAT dans RAX (return_value)
+
+⚠️ ATTENTION : Pour les syscalls, on utilise R10 (fourth_param) au lieu de RCX (counter) !
+
+🔢 SYSCALLS ESSENTIELS AVEC EXEMPLES :
+
+═══════════════════════════════════════════════════════════════
+📝 SYS_WRITE (1) - Écrire du texte - Macro: sys_write
+═══════════════════════════════════════════════════════════════
+
+Prototype C : ssize_t write(int fd, void *buf, size_t count)
+
+Paramètres :
+- RDI (first_param) = fd (file descriptor : 0=stdin_fd, 1=stdout_fd, 2=stderr_fd)
+- RSI (second_param) = adresse du texte à écrire
+- RDX (third_param) = nombre de caractères
+
+EXEMPLE - Afficher "Hello\n" :
+    .section .data
+    msg: .ascii "Hello\n"
+    msg_len = . - msg
+    
+    .section .text
+    # Écrire sur stdout
+    mov rax, 1              # mov syscall_num, sys_write - "Je veux écrire quelque chose"
+    mov rdi, 1              # mov first_param, stdout_fd - "Sur l'écran principal"  
+    mov rsi, msg            # mov second_param, msg - "Voici où est mon texte"
+    mov rdx, msg_len        # mov third_param, msg_len - "Il fait 5 caractères"
+    syscall                 # "Fais-le maintenant !"
+    # rax (return_value) contient maintenant le nombre de caractères écrits
+
+═══════════════════════════════════════════════════════════════
+📖 SYS_READ (0) - Lire du texte - Macro: sys_read
+═══════════════════════════════════════════════════════════════
+
+Prototype C : ssize_t read(int fd, void *buf, size_t count)
+
+EXEMPLE - Lire 10 caractères depuis le clavier :
+    .section .bss
+    buffer: .space 10       # réserve 10 octets
+    
+    .section .text
+    mov rax, 0              # mov syscall_num, sys_read
+    mov rdi, 0              # mov first_param, stdin_fd (clavier)
+    mov rsi, buffer         # mov second_param, buffer (où stocker ce qu'on lit)
+    mov rdx, 10             # mov third_param, 10 (lire maximum 10 caractères)
+    syscall
+    # rax (return_value) contient le nombre de caractères effectivement lus
+
+═══════════════════════════════════════════════════════════════
+🚪 SYS_EXIT (60) - Terminer le programme - Macro: sys_exit
+═══════════════════════════════════════════════════════════════
+
+Prototype C : void exit(int status)
+
+EXEMPLE - Sortir avec code 0 (succès) :
+    mov rax, 60             # mov syscall_num, sys_exit
+    mov rdi, 0              # mov first_param, success_code (code de retour 0 = succès)
+    syscall                 # le programme s'arrête ici
+
+EXEMPLE - Sortir avec erreur :
+    mov rax, 60             # mov syscall_num, sys_exit
+    mov rdi, 1              # mov first_param, failure_code (code de retour 1 = erreur)
     syscall
 
-===============================================================================
-5. STRUCTURE D'UN PROGRAMME
-===============================================================================
+═══════════════════════════════════════════════════════════════
+📁 SYS_OPEN (2) - Ouvrir un fichier - Macro: sys_open
+═══════════════════════════════════════════════════════════════
 
-SECTIONS PRINCIPALES :
-.section .data      # Données initialisées
-.section .bss       # Données non initialisées
-.section .text      # Code exécutable
+Prototype C : int open(char *pathname, int flags, mode_t mode)
 
-EXEMPLE MINIMAL :
+FLAGS courants :
+- O_RDONLY (0) = lecture seule (read_only)
+- O_WRONLY (1) = écriture seule (write_only)
+- O_RDWR (2) = lecture/écriture (read_write)
+- O_CREAT (64) = créer si n'existe pas (create_file)
+
+EXEMPLE - Ouvrir "fichier.txt" en lecture :
+    .section .data
+    filename: .asciz "fichier.txt"   # chaîne terminée par \0
+    
+    .section .text
+    mov rax, 2              # mov syscall_num, sys_open
+    mov rdi, filename       # mov first_param, filename (nom du fichier)
+    mov rsi, 0              # mov second_param, read_only (O_RDONLY)
+    mov rdx, 0              # mov third_param, 0 (mode - pas utilisé en lecture)
+    syscall
+    # rax (return_value) contient le file descriptor (ou -1 si erreur)
+
+═══════════════════════════════════════════════════════════════
+🔒 SYS_CLOSE (3) - Fermer un fichier - Macro: sys_close
+═══════════════════════════════════════════════════════════════
+
+EXEMPLE - Fermer un fichier :
+    # Supposons que rax (return_value) contient le file descriptor
+    mov rdi, rax            # mov first_param, accumulator (fd à fermer)
+    mov rax, 3              # mov syscall_num, sys_close
+    syscall
+    # rax = 0 si succès, -1 si erreur
+
+═══════════════════════════════════════════════════════════════
+🧠 SYS_MMAP (9) - Allouer de la mémoire
+═══════════════════════════════════════════════════════════════
+
+Plus complexe mais très utile !
+
+Prototype C : void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
+
+EXEMPLE - Allouer 4096 octets (1 page) :
+    mov rax, 9              # sys_mmap
+    mov rdi, 0              # addr = 0 (laisse le kernel choisir)
+    mov rsi, 4096           # taille = 4KB
+    mov rdx, 3              # prot = PROT_READ|PROT_WRITE
+    mov r10, 34             # flags = MAP_PRIVATE|MAP_ANONYMOUS  
+    mov r8, -1              # fd = -1 (pas de fichier)
+    mov r9, 0               # offset = 0
+    syscall
+    # rax contient l'adresse de la mémoire allouée
+
+🔍 COMMENT VÉRIFIER LES ERREURS :
+
+Les syscalls retournent -1 à -4095 en cas d'erreur.
+
+    syscall                 # fait l'appel
+    cmp rax, -4095          # erreur ?
+    jae erreur_syscall      # si rax >= -4095, c'est une erreur
+    # sinon, rax contient le résultat valide
+
+📚 EXEMPLE COMPLET - Programme qui lit et affiche :
+
     .intel_syntax noprefix
     
     .section .data
-    msg: .ascii "Hello, World!\n"
-    msg_len = . - msg
+    prompt: .ascii "Tapez quelque chose: "
+    prompt_len = . - prompt
+    
+    .section .bss
+    buffer: .space 100      # buffer de 100 caractères
     
     .section .text
     .global _start
     
     _start:
-        # Écrire message
+        # Afficher le prompt
+        mov rax, 1          # mov syscall_num, sys_write
+        mov rdi, 1          # mov first_param, stdout_fd
+        mov rsi, prompt     # mov second_param, prompt (message)
+        mov rdx, prompt_len # mov third_param, prompt_len (taille)
+        syscall
+        
+        # Lire l'entrée utilisateur
+        mov rax, 0          # mov syscall_num, sys_read
+        mov rdi, 0          # mov first_param, stdin_fd
+        mov rsi, buffer     # mov second_param, buffer (où stocker)
+        mov rdx, 100        # mov third_param, 100 (taille max)
+        syscall
+        mov rbx, rax        # mov base_reg, accumulator (sauvegarder nb de caractères lus)
+        
+        # Afficher ce qui a été lu
+        mov rax, 1          # mov syscall_num, sys_write
+        mov rdi, 1          # mov first_param, stdout_fd
+        mov rsi, buffer     # mov second_param, buffer (ce qu'on a lu)
+        mov rdx, rbx        # mov third_param, base_reg (nombre de caractères)
+        syscall
+        
+        # Sortir
+        mov rax, 60         # mov syscall_num, sys_exit
+        mov rdi, 0          # mov first_param, success_code
+        syscall
+
+===============================================================================
+6. 🏗️ STRUCTURE D'UN PROGRAMME (ARCHITECTURE COMPLÈTE)
+===============================================================================
+
+🤔 COMMENT EST ORGANISÉ UN PROGRAMME ASSEMBLEUR ?
+Un programme assembleur est comme une maison avec différentes pièces, chacune
+ayant un rôle spécifique.
+
+🏠 LES TROIS SECTIONS PRINCIPALES :
+
+═══════════════════════════════════════════════════════════════
+📦 .section .data (Les meubles de la maison)
+═══════════════════════════════════════════════════════════════
+
+RÔLE : Contient les données INITIALISÉES (avec une valeur au départ)
+UTILISATION : chaînes de caractères, constantes, tableaux pré-remplis
+
+DIRECTIVES COURANTES :
+.ascii "texte"      # Chaîne sans \0 terminal
+.asciz "texte"      # Chaîne avec \0 terminal  
+.byte 42            # Un octet avec valeur 42
+.word 1000          # Un mot 16-bit avec valeur 1000
+.long 123456        # Un mot 32-bit avec valeur 123456
+.quad 0x123456789   # Un mot 64-bit avec valeur
+
+EXEMPLES CONCRETS :
+    .section .data
+    # Messages
+    hello: .asciz "Hello, World!\n"
+    error_msg: .ascii "Erreur!\n"
+    error_len = . - error_msg       # calcule automatiquement la taille
+    
+    # Nombres
+    magic_number: .long 42
+    pi_approximation: .long 3141592
+    
+    # Tableaux
+    numbers: .long 1, 2, 3, 4, 5
+    matrix: .byte 1, 0, 1
+            .byte 0, 1, 0  
+            .byte 1, 0, 1
+
+═══════════════════════════════════════════════════════════════
+📦 .section .bss (Les espaces vides à remplir)
+═══════════════════════════════════════════════════════════════
+
+RÔLE : Contient les données NON-INITIALISÉES (réservées mais vides)
+UTILISATION : buffers, variables qui seront remplies plus tard
+AVANTAGE : N'augmente pas la taille du fichier exécutable !
+
+DIRECTIVES :
+.space N            # Réserve N octets (tous à zéro)
+.zero N             # Pareil que .space
+.comm nom, taille   # Variable globale non-initialisée
+
+EXEMPLES :
+    .section .bss
+    user_input: .space 256      # buffer pour saisie utilisateur
+    file_buffer: .space 4096    # buffer pour lire un fichier
+    temp_array: .space 1000     # tableau temporaire
+    counter: .space 8           # variable compteur 64-bit
+
+═══════════════════════════════════════════════════════════════
+📦 .section .text (Le cœur de la maison - le code)
+═══════════════════════════════════════════════════════════════
+
+RÔLE : Contient le CODE EXÉCUTABLE
+UTILISATION : toutes vos instructions, fonctions, logique
+
+POINT D'ENTRÉE :
+Tout programme doit avoir un point d'entrée. En assembleur pur, c'est "_start".
+
+    .section .text
+    .global _start      # rend _start visible au linker
+    
+    _start:
+        # Votre code ici
+        # ...
+        
+        # OBLIGATOIRE : terminer par exit
+        mov rax, 60
+        mov rdi, 0
+        syscall
+
+🔧 EXEMPLE COMPLET - Programme avec les 3 sections :
+
+    .intel_syntax noprefix
+    
+    # ═══ DONNÉES INITIALISÉES ═══
+    .section .data
+    welcome: .asciz "Bienvenue ! Entrez votre nom: "
+    hello: .ascii "Bonjour, "
+    hello_len = . - hello
+    newline: .ascii "\n"
+    
+    # ═══ DONNÉES NON-INITIALISÉES ═══
+    .section .bss
+    name_buffer: .space 50      # buffer pour le nom (50 chars max)
+    name_length: .space 8       # stockera la longueur du nom
+    
+    # ═══ CODE EXÉCUTABLE ═══
+    .section .text
+    .global _start
+    
+    _start:
+        # 1. Afficher le message de bienvenue
+        mov rax, 1              # mov syscall_num, sys_write
+        mov rdi, 1              # mov first_param, stdout_fd
+        mov rsi, welcome        # mov second_param, welcome (message)
+        mov rdx, 31             # mov third_param, 31 (taille calculée à la main)
+        syscall
+        
+        # 2. Lire le nom de l'utilisateur
+        mov rax, 0              # mov syscall_num, sys_read
+        mov rdi, 0              # mov first_param, stdin_fd
+        mov rsi, name_buffer    # mov second_param, name_buffer (où stocker)
+        mov rdx, 49             # mov third_param, 49 (max 49 chars, garde 1 pour \0)
+        syscall
+        mov [name_length], rax  # sauvegarde la longueur
+        
+        # 3. Afficher "Bonjour, "
+        mov rax, 1              # mov syscall_num, sys_write
+        mov rdi, 1              # stdout
+        mov rsi, hello          # "Bonjour, "
+        mov rdx, hello_len      # taille
+        syscall
+        
+        # 4. Afficher le nom
+        mov rax, 1              # mov syscall_num, sys_write
+        mov rdi, 1              # mov first_param, stdout_fd
+        mov rsi, name_buffer    # mov second_param, name_buffer (le nom tapé)
+        mov rdx, [name_length]  # mov third_param, [name_length] (longueur sauvegardée)
+        dec rdx                 # dec third_param - enlève le \n final
+        syscall
+        
+        # 5. Afficher un retour à la ligne
+        mov rax, 1              # mov syscall_num, sys_write
+        mov rdi, 1              # mov first_param, stdout_fd
+        mov rsi, newline        # mov second_param, newline ("\n")
+        mov rdx, 1              # mov third_param, 1 (1 caractère)
+        syscall
+        
+        # 6. Sortir proprement
+        mov rax, 60             # mov syscall_num, sys_exit
+        mov rdi, 0              # mov first_param, success_code
+        syscall
+
+🔧 COMPILATION ET LINKING :
+
+    # Assemblage (source .asm → objet .o)
+    as -64 programme.asm -o programme.o
+    
+    # Linking (objet .o → exécutable)
+    ld programme.o -o programme
+    
+    # Exécution
+    ./programme
+
+🏷️ LABELS ET FONCTIONS :
+
+Les labels sont des "étiquettes" qui marquent des positions dans le code :
+
+    mon_label:              # Définit un label
+        mov rax, 42
+        ret
+    
+    main_loop:              # Autre label
+        # code de boucle
+        jmp main_loop       # saute à main_loop
+
+APPEL DE FONCTIONS :
+    call mon_label          # appelle la fonction
+    # l'exécution continue ici après le 'ret'
+
+===============================================================================hj
+7. 🧮 GESTION DE LA MÉMOIRE (STACK, HEAP ET COMPAGNIE)
+===============================================================================
+
+🤔 COMMENT FONCTIONNE LA MÉMOIRE ?
+La mémoire de votre programme est organisée en plusieurs zones distinctes,
+chacune ayant un rôle spécifique. C'est comme un immeuble avec différents étages.
+
+🏢 ORGANISATION MÉMOIRE (de haut en bas) :
+
+[Adresses hautes]
+┌─────────────────────────────────────┐
+│  🔒 KERNEL SPACE (interdit)        │  ← Réservé au système
+├─────────────────────────────────────┤
+│  📚 STACK (pile)                   │  ← Variables locales, appels
+│     ↓ Croît vers le bas             │
+├─────────────────────────────────────┤
+│  📖 SHARED LIBRARIES (.so)         │  ← Bibliothèques partagées
+├─────────────────────────────────────┤
+│  🧠 HEAP (tas)                     │  ← Allocation dynamique
+│     ↑ Croît vers le haut            │
+├─────────────────────────────────────┤
+│  📦 BSS (données non-init)         │  ← Variables globales = 0
+├─────────────────────────────────────┤
+│  📋 DATA (données initialisées)    │  ← Variables globales != 0
+├─────────────────────────────────────┤
+│  💾 TEXT (code exécutable)         │  ← Votre programme
+└─────────────────────────────────────┘
+[Adresses basses]
+
+═══════════════════════════════════════════════════════════════
+📚 LA STACK (PILE) EXPLIQUÉE SIMPLEMENT
+═══════════════════════════════════════════════════════════════
+
+🤔 QU'EST-CE QUE LA STACK ?
+La stack est comme une pile d'assiettes :
+- Vous ajoutez toujours sur le dessus (PUSH)
+- Vous retirez toujours du dessus (POP)
+- Dernier entré, premier sorti (LIFO)
+
+🎯 À QUOI SERT LA STACK ?
+1. Sauvegarder les registres lors d'appels de fonction
+2. Stocker les variables locales
+3. Passer les paramètres (si plus de 6)
+4. Sauvegarder l'adresse de retour des fonctions
+
+📊 MÉCANISME DÉTAILLÉ :
+
+RSP (Stack Pointer) pointe TOUJOURS vers le sommet de la pile.
+RSP diminue quand on ajoute (push), augmente quand on retire (pop).
+
+État initial :
+RSP → [????]  ← Sommet de la pile
+      [????]
+      [????]
+
+Après "push rax" (rax = 0x123456789ABCDEF0) :
+      [????]
+RSP → [0x123456789ABCDEF0]  ← Nouveau sommet
+      [????]
+      [????]
+
+Après "push rbx" (rbx = 0x555) :
+      [????]
+RSP → [0x555]               ← Nouveau sommet
+      [0x123456789ABCDEF0]
+      [????]
+      [????]
+
+Après "pop rcx" :
+      [????]
+RSP → [0x123456789ABCDEF0]  ← Nouveau sommet
+      [????]                 (0x555 récupéré dans rcx/counter)
+      [????]
+
+🛠️ INSTRUCTIONS STACK ESSENTIELLES :
+
+push registre/valeur    # Met sur la pile
+pop registre           # Récupère de la pile
+pushf                  # Sauvegarde les flags
+popf                   # Restaure les flags
+
+EXEMPLES PRATIQUES :
+
+# Sauvegarder plusieurs registres
+push rax        # push accumulator
+push rbx        # push base_reg  
+push rcx        # push counter
+# ... utiliser d'autres valeurs dans rax, rbx, rcx
+pop rcx         # pop counter - Restaure dans l'ordre inverse !
+pop rbx         # pop base_reg
+pop rax         # pop accumulator
+
+# Sauvegarder une valeur immédiate
+push 42         # Met 42 sur la pile
+# ... code
+pop rax         # pop accumulator (rax = 42)
+
+⚠️ ATTENTION CRITIQUE :
+TOUJOURS équilibrer push/pop ! Sinon crash garanti.
+
+    push rax    # push accumulator
+    push rbx    # push base_reg
+    # ... code
+    pop rbx     # pop base_reg ✅ Correct
+    pop rax     # pop accumulator ✅ Correct
+    ret
+
+VS
+
+    push rax    # push accumulator
+    push rbx    # push base_reg
+    # ... code
+    pop rax     # pop accumulator ❌ ERREUR ! rax récupère la valeur de rbx
+    pop rbx     # pop base_reg ❌ ERREUR ! rbx récupère la valeur de rax
+    ret
+
+🔍 EXEMPLE COMPLET - Fonction avec variables locales :
+
+    ma_fonction:
+        # Prologue : setup de la stack frame
+        push rbp            # push base_ptr - Sauvegarde l'ancien frame pointer
+        mov rbp, rsp        # mov base_ptr, stack_ptr - Nouveau frame pointer
+        sub rsp, 32         # sub stack_ptr, 32 - Réserve 32 octets pour variables locales
+        
+        # Maintenant la stack ressemble à :
+        # [rbp-8]  : variable locale 1 (8 octets)
+        # [rbp-16] : variable locale 2 (8 octets)
+        # [rbp-24] : variable locale 3 (8 octets)
+        # [rbp-32] : variable locale 4 (8 octets)
+        # [rbp]    : ancien rbp
+        # [rbp+8]  : adresse de retour
+        
+        # Utilisation des variables locales
+        mov qword ptr [rbp-8], 42       # mov qword ptr [base_ptr-8], 42 - var1 = 42
+        mov qword ptr [rbp-16], 100     # mov qword ptr [base_ptr-16], 100 - var2 = 100
+        mov rax, [rbp-8]                # mov accumulator, [base_ptr-8] - charge var1
+        add rax, [rbp-16]               # add accumulator, [base_ptr-16] - rax = var1 + var2
+        mov [rbp-24], rax               # mov [base_ptr-24], accumulator - var3 = var1 + var2
+        
+        # Épilogue : nettoyage
+        add rsp, 32         # add stack_ptr, 32 - Libère les variables locales
+        pop rbp             # pop base_ptr - Restaure l'ancien frame pointer
+        ret
+
+═══════════════════════════════════════════════════════════════
+🧠 LE HEAP (TAS) EXPLIQUÉ SIMPLEMENT
+═══════════════════════════════════════════════════════════════
+
+🤔 QU'EST-CE QUE LE HEAP ?
+Le heap est comme un grand terrain vague où vous pouvez construire
+n'importe quoi, n'importe où, mais vous devez gérer vous-même l'espace.
+
+🎯 DIFFÉRENCES STACK VS HEAP :
+
+STACK :                          HEAP :
+- Rapide (quelques cycles)       - Plus lent (syscalls)
+- Gestion automatique           - Gestion manuelle
+- Taille limitée (~8MB)         - Taille quasi-illimitée
+- Variables locales             - Grosses structures
+- Ordre strict (LIFO)           - Accès aléatoire
+
+💡 QUAND UTILISER LE HEAP ?
+- Grosses structures de données
+- Taille inconnue à l'avance
+- Données partagées entre fonctions
+- Allocation dynamique
+
+🔧 ALLOCATION MÉMOIRE AVEC MMAP :
+
+mmap est l'appel système pour allouer de la mémoire dans le heap.
+
+Prototype complet :
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset)
+
+PARAMÈTRES DÉTAILLÉS :
+- addr : Adresse souhaitée (0 = laisse le kernel choisir)
+- length : Taille en octets
+- prot : Permissions (lecture/écriture/exécution)
+- flags : Options d'allocation
+- fd : File descriptor (-1 pour mémoire anonyme)
+- offset : Décalage dans le fichier (0 pour mémoire anonyme)
+
+CONSTANTES IMPORTANTES :
+# Protection (prot)
+PROT_READ = 1       # read_access - Lecture autorisée
+PROT_WRITE = 2      # write_access - Écriture autorisée
+PROT_EXEC = 4       # exec_access - Exécution autorisée
+
+# Flags
+MAP_PRIVATE = 2     # private_mapping - Modifications privées au processus
+MAP_ANONYMOUS = 32  # anonymous_mapping - Pas de fichier associé
+MAP_FIXED = 16      # fixed_address - Utilise exactement l'adresse demandée
+
+EXEMPLE COMPLET - Allouer 1MB de mémoire :
+
+    # Allouer 1MB (1024*1024 = 1048576 octets)
+    mov rax, 9              # mov syscall_num, sys_mmap
+    mov rdi, 0              # addr = 0 (laisse le kernel choisir)
+    mov rsi, 1048576        # length = 1MB
+    mov rdx, 3              # prot = PROT_READ | PROT_WRITE
+    mov r10, 34             # flags = MAP_PRIVATE | MAP_ANONYMOUS
+    mov r8, -1              # fd = -1 (anonyme)
+    mov r9, 0               # offset = 0
+    syscall
+    
+    # Vérifier le résultat
+    cmp rax, -1
+    je allocation_failed
+    
+    # rax contient maintenant l'adresse du bloc alloué
+    mov [heap_pointer], rax  # Sauvegarder l'adresse
+    
+    # Utiliser la mémoire
+    mov rbx, rax            # rbx = adresse du bloc
+    mov qword ptr [rbx], 0x123456789ABCDEF0     # Écrire au début
+    mov qword ptr [rbx+8], 0x555               # Écrire à l'offset 8
+    
+    # Lire depuis la mémoire
+    mov rcx, [rbx]          # rcx = 0x123456789ABCDEF0
+    mov rdx, [rbx+8]        # rdx = 0x555
+
+🗑️ LIBÉRATION MÉMOIRE AVEC MUNMAP :
+
+TOUJOURS libérer la mémoire allouée ! Sinon = fuite mémoire.
+
+    # Libérer le bloc alloué précédemment
+    mov rax, 11             # sys_munmap
+    mov rdi, [heap_pointer] # adresse du bloc
+    mov rsi, 1048576        # taille (DOIT être identique à mmap)
+    syscall
+    
+    # Vérifier le résultat
+    cmp rax, 0
+    jne deallocation_failed
+
+🏗️ EXEMPLE COMPLET - Gestionnaire de mémoire simple :
+
+    .section .data
+    heap_base: .quad 0      # Adresse de base du heap
+    heap_size: .quad 0      # Taille du heap
+    heap_used: .quad 0      # Octets utilisés
+    
+    .section .text
+    
+    # Initialiser le heap (allouer 1MB)
+    heap_init:
+        mov rax, 9              # sys_mmap
+        mov rdi, 0              # addr = 0
+        mov rsi, 1048576        # 1MB
+        mov rdx, 3              # PROT_READ | PROT_WRITE
+        mov r10, 34             # MAP_PRIVATE | MAP_ANONYMOUS
+        mov r8, -1              # fd = -1
+        mov r9, 0               # offset = 0
+        syscall
+        
+        cmp rax, -1
+        je heap_init_failed
+        
+        mov [heap_base], rax    # Sauvegarder l'adresse
+        mov qword ptr [heap_size], 1048576
+        mov qword ptr [heap_used], 0
+        ret
+    
+    # Allouer N octets (taille dans RDI)
+    # Retourne l'adresse dans RAX ou 0 si échec
+    heap_alloc:
+        mov rax, [heap_used]    # Octets déjà utilisés
+        add rax, rdi            # + nouvelle demande
+        cmp rax, [heap_size]    # Compare avec la taille totale
+        jg heap_alloc_failed    # Plus de place
+        
+        mov rax, [heap_base]    # Adresse de base
+        add rax, [heap_used]    # + offset courant
+        add [heap_used], rdi    # Met à jour l'offset
+        ret
+    
+    heap_alloc_failed:
+        xor rax, rax            # Retourne 0 (échec)
+        ret
+    
+    # Libérer tout le heap
+    heap_destroy:
+        mov rax, 11             # sys_munmap
+        mov rdi, [heap_base]    # adresse
+        mov rsi, [heap_size]    # taille
+        syscall
+        ret
+
+UTILISATION :
+    call heap_init          # Initialiser
+    
+    mov rdi, 1000          # Allouer 1000 octets
+    call heap_alloc
+    test rax, rax          # Vérifier si != 0
+    jz allocation_failed
+    
+    # Utiliser la mémoire pointée par rax
+    mov [rax], 42          # Écrire 42 au début
+    
+    call heap_destroy      # Libérer tout à la fin
+
+===============================================================================
+8. 🛠️ OUTILS DE DÉVELOPPEMENT (VOTRE ARSENAL)
+===============================================================================
+
+🔧 ASSEMBLEURS DISPONIBLES :
+
+═══════════════════════════════════════════════════════════════
+🔨 GNU AS (gas) - L'assembleur standard
+═══════════════════════════════════════════════════════════════
+
+AVANTAGES :
+- Intégré dans GCC
+- Syntaxe AT&T par défaut
+- Excellent support des directives GNU
+- Parfait pour l'intégration avec C
+
+UTILISATION :
+    as -64 fichier.s -o fichier.o       # Assemblage 64-bit
+    as -32 fichier.s -o fichier.o       # Assemblage 32-bit
+    as -g fichier.s -o fichier.o        # Avec symboles debug
+
+EXEMPLE AVEC SYNTAXE INTEL :
+    .intel_syntax noprefix
+    .global _start
+    
+    _start:
+        mov rax, 1
+        mov rdi, 1
+        mov rsi, msg
+        mov rdx, 13
+        syscall
+        
+        mov rax, 60
+        mov rdi, 0
+        syscall
+
+═══════════════════════════════════════════════════════════════
+🔨 NASM - Assembleur Intel natif
+═══════════════════════════════════════════════════════════════
+
+AVANTAGES :
+- Syntaxe Intel pure (plus lisible)
+- Macros puissantes
+- Formats de sortie multiples
+- Excellent pour l'assembleur pur
+
+UTILISATION :
+    nasm -f elf64 fichier.asm -o fichier.o    # Format ELF 64-bit
+    nasm -f elf32 fichier.asm -o fichier.o    # Format ELF 32-bit
+    nasm -g -f elf64 fichier.asm -o fichier.o # Avec debug
+
+EXEMPLE NASM :
+    section .data
+        msg db 'Hello, World!', 0xA
+        msg_len equ $ - msg
+    
+    section .text
+        global _start
+    
+    _start:
         mov rax, 1
         mov rdi, 1
         mov rsi, msg
         mov rdx, msg_len
         syscall
         
-        # Sortir proprement
         mov rax, 60
         mov rdi, 0
         syscall
 
-COMPILATION :
-    as -64 file.asm -o file.o
-    ld file.o -o executable
+🔗 ÉDITEURS DE LIENS :
 
-===============================================================================
-6. GESTION DE LA MÉMOIRE
-===============================================================================
+═══════════════════════════════════════════════════════════════
+🔗 LD - Éditeur de liens GNU
+═══════════════════════════════════════════════════════════════
 
-STACK (pile) :
-- Croît vers les adresses basses
-- RSP pointe vers le sommet
-- push/pop pour manipuler
-- Utilisée pour variables locales et appels
+UTILISATION BASIQUE :
+    ld fichier.o -o executable              # Linking simple
+    ld fichier1.o fichier2.o -o executable  # Linking multiple
+    ld -s fichier.o -o executable           # Strip symbols
+    ld -static fichier.o -o executable      # Linking statique
 
-HEAP (tas) :
-- Allocation dynamique avec mmap/munmap
-- Ou utiliser malloc/free depuis libc
+LINKING AVEC LIBC :
+    ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 \
+       /usr/lib/x86_64-linux-gnu/crt1.o \
+       /usr/lib/x86_64-linux-gnu/crti.o \
+       fichier.o \
+       -lc \
+       /usr/lib/x86_64-linux-gnu/crtn.o \
+       -o executable
 
-EXEMPLE - Allocation mmap :
-    mov rax, 9              # sys_mmap
-    mov rdi, 0              # addr (laisse le kernel choisir)
-    mov rsi, 4096           # taille (4KB)
-    mov rdx, 3              # prot (PROT_READ | PROT_WRITE)
-    mov r10, 34             # flags (MAP_PRIVATE | MAP_ANONYMOUS)
-    mov r8, -1              # fd (-1 pour anonymous)
-    mov r9, 0               # offset
-    syscall                 # retourne adresse dans RAX
+PLUS SIMPLE AVEC GCC :
+    gcc -nostdlib fichier.o -o executable   # Sans libc
+    gcc fichier.o -o executable             # Avec libc
 
-===============================================================================
-7. OUTILS DE DÉVELOPPEMENT
-===============================================================================
+🔍 OUTILS D'ANALYSE :
 
-ASSEMBLEUR :
-- gas (GNU Assembler) : Assembleur standard Linux
-- nasm : Alternative avec syntaxe Intel native
+═══════════════════════════════════════════════════════════════
+🔍 OBJDUMP - Désassembleur et analyseur
+═══════════════════════════════════════════════════════════════
 
-DÉBOGAGE :
-- gdb : Débogueur principal
-- objdump : Désassemblage
-- strace : Trace des syscalls
-- valgrind : Détection de fuites mémoire
+COMMANDES ESSENTIELLES :
+    objdump -d executable               # Désassemble le code
+    objdump -D executable               # Désassemble tout
+    objdump -S executable               # Mélange source/asm
+    objdump -t executable               # Table des symboles
+    objdump -x executable               # Toutes les headers
 
-ANALYSE :
-- readelf : Informations sur ELF
-- nm : Symboles
-- size : Taille des sections
+EXEMPLE DE SORTIE :
+    $ objdump -d hello
+    
+    hello:     file format elf64-x86-64
+    
+    Disassembly of section .text:
+    
+    0000000000401000 <_start>:
+      401000:    b8 01 00 00 00    mov    $0x1,%eax
+      401005:    bf 01 00 00 00    mov    $0x1,%edi
+      40100a:    be 00 20 40 00    mov    $0x402000,%esi
+      40100f:    ba 0d 00 00 00    mov    $0xd,%edx
+      401014:    0f 05             syscall
+
+═══════════════════════════════════════════════════════════════
+🔍 READELF - Analyseur de fichiers ELF
+═══════════════════════════════════════════════════════════════
 
 COMMANDES UTILES :
-    objdump -d executable           # Désassemble
-    strace ./executable             # Trace syscalls
-    gdb ./executable                # Debug interactif
-    readelf -h executable           # Headers ELF
+    readelf -h executable               # Header ELF
+    readelf -S executable               # Sections
+    readelf -l executable               # Segments
+    readelf -s executable               # Symboles
+    readelf -r executable               # Relocations
 
-===============================================================================
-8. DEBUGGING ET OPTIMISATION
-===============================================================================
+EXEMPLE - Header ELF :
+    $ readelf -h hello
+    ELF Header:
+      Magic:   7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 
+      Class:                             ELF64
+      Data:                              2's complement, little endian
+      Version:                           1 (current)
+      OS/ABI:                            UNIX - System V
+      ABI Version:                       0
+      Type:                              EXEC (Executable file)
+      Machine:                           Advanced Micro Devices X86-64
+      Version:                           0x1
+      Entry point address:               0x401000
+      Start of program headers:          64 (bytes into file)
+      Start of section headers:          4424 (bytes into file)
 
-DEBUGGING :
-- Utilise les symboles de debug : as -g
-- Points d'arrêt sur labels dans gdb
-- Examine registres : info registers
-- Examine mémoire : x/10x $rsp
+═══════════════════════════════════════════════════════════════
+🔍 HEXDUMP - Visualisation binaire
+═══════════════════════════════════════════════════════════════
 
-OPTIMISATION :
-- Minimise les accès mémoire
-- Utilise les registres efficacement
-- Évite les branches si possible
-- Aligne les données (alignement naturel)
-- Utilise les instructions vectorielles (SSE/AVX) si besoin
+FORMATS UTILES :
+    hexdump -C executable               # Format canonique
+    hexdump -x executable               # Mots 16-bit
+    od -t x1 executable                 # Octets hex
+    od -t c executable                  # Caractères ASCII
 
-EXEMPLE - Boucle optimisée :
-    mov rcx, 1000           # Compteur
-    xor rax, rax            # Résultat = 0
+EXEMPLE :
+    $ hexdump -C hello | head -5
+    00000000  7f 45 4c 46 02 01 01 00  00 00 00 00 00 00 00 00  |.ELF............|
+    00000010  02 00 3e 00 01 00 00 00  00 10 40 00 00 00 00 00  |..>.......@.....|
+    00000020  40 00 00 00 00 00 00 00  48 11 00 00 00 00 00 00  |@.......H.......|
+    00000030  00 00 00 00 40 00 38 00  03 00 40 00 07 00 06 00  |....@.8...@.....|
+
+🐛 OUTILS DE DÉBOGAGE :
+
+═══════════════════════════════════════════════════════════════
+🐛 GDB - Débogueur GNU
+═══════════════════════════════════════════════════════════════
+
+COMMANDES ESSENTIELLES :
+    gdb ./executable                    # Lancer gdb
+    (gdb) break _start                  # Point d'arrêt
+    (gdb) run                           # Exécuter
+    (gdb) step                          # Pas à pas (entre dans fonctions)
+    (gdb) next                          # Pas à pas (survole fonctions)
+    (gdb) continue                      # Continuer
+    (gdb) info registers                # Voir les registres
+    (gdb) x/10x $rsp                    # Examiner la stack
+    (gdb) x/s $rsi                      # Examiner chaîne
+    (gdb) disassemble                   # Désassembler la fonction courante
+
+EXEMPLE DE SESSION :
+    $ gdb ./hello
+    (gdb) break _start
+    Breakpoint 1 at 0x401000
+    (gdb) run
+    Starting program: ./hello 
     
-    loop_start:
-        add rax, rcx        # Accumule
-        dec rcx             # Décrémente
-        jnz loop_start      # Continue si != 0
-
-===============================================================================
-9. BONNES PRATIQUES POUR LAYERCAKE
-===============================================================================
-
-STRUCTURE MODULAIRE :
-- Un fichier .asm par module
-- Fonctions avec conventions claires
-- Préfixes pour éviter les conflits de noms
-- Documentation des registres utilisés
-
-GESTION D'ERREURS :
-- Vérifier les codes de retour des syscalls
-- Nettoyer les ressources en cas d'erreur
-- Messages d'erreur informatifs
-
-PERFORMANCE :
-- Profiler avec perf
-- Optimiser les chemins critiques
-- Utiliser les caches efficacement
-- Minimiser les syscalls
-
-PORTABILITÉ :
-- Séparer le code spécifique à l'architecture
-- Utiliser des macros pour les différences
-- Tester sur différentes distributions
-
-EXEMPLE - Fonction modulaire :
-    .intel_syntax noprefix
+    Breakpoint 1, 0x0000000000401000 in _start ()
+    (gdb) info registers
+    rax            0x0      0
+    rbx            0x0      0
+    rcx            0x0      0
+    rdx            0x0      0
+    rsi            0x0      0
+    rdi            0x0      0
+    (gdb) step
+    0x0000000000401005 in _start ()
+    (gdb) info registers
+    rax            0x1      1
     
-    # lc_strlen - Calcule la longueur d'une chaîne C
-    # Entrée : RDI = pointeur vers chaîne
-    # Sortie : RAX = longueur
-    # Modifie : RAX, RCX
-    lc_strlen:
-        push rbp
-        mov rbp, rsp
-        
-        xor rax, rax            # Compteur = 0
-        mov rcx, rdi            # Copie du pointeur
-        
-    strlen_loop:
-        cmp byte ptr [rcx], 0   # Caractère nul ?
-        je strlen_done          # Oui, fini
-        inc rcx                 # Pointeur suivant
-        inc rax                 # Compteur++
-        jmp strlen_loop
-        
-    strlen_done:
-        pop rbp
-        ret
+DÉBOGAGE AVEC SYMBOLS :
+    # Compiler avec symboles
+    as -g fichier.s -o fichier.o
+    ld fichier.o -o executable
+    
+    # Dans gdb
+    (gdb) list                          # Voir le code source
+    (gdb) break fonction_name           # Point d'arrêt par nom
 
-LINKING MULTIPLE FILES :
-    as -64 main.asm -o main.o
-    as -64 utils.asm -o utils.o
-    ld main.o utils.o -o layercake
+═══════════════════════════════════════════════════════════════
+🐛 STRACE - Traceur d'appels système
+═══════════════════════════════════════════════════════════════
+
+UTILISATION :
+    strace ./executable                 # Trace tous les syscalls
+    strace -e write ./executable        # Trace seulement write
+    strace -e trace=file ./executable   # Trace les syscalls fichier
+    strace -c ./executable              # Statistiques
+
+EXEMPLE :
+    $ strace ./hello
+    execve("./hello", ["./hello"], 0x7ffd...) = 0
+    write(1, "Hello, World!\n", 14)      = 14
+    exit(0)                             = ?
+    +++ exited with 0 +++
+
+═══════════════════════════════════════════════════════════════
+🐛 VALGRIND - Détecteur de fuites mémoire
+═══════════════════════════════════════════════════════════════
+
+OUTILS VALGRIND :
+    valgrind --tool=memcheck ./executable    # Détection fuites
+    valgrind --tool=cachegrind ./executable  # Analyse cache
+    valgrind --tool=callgrind ./executable   # Profiling
+
+EXEMPLE :
+    $ valgrind --tool=memcheck ./program
+    ==12345== Memcheck, a memory error detector
+    ==12345== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+    ==12345== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+    ==12345== Command: ./program
+    ==12345== 
+    ==12345== 
+    ==12345== HEAP SUMMARY:
+    ==12345==     in use at exit: 0 bytes in 0 blocks
+    ==12345==   total heap usage: 0 allocs, 0 frees, 0 bytes allocated
+    ==12345== 
+    ==12345== All heap blocks were freed -- no leaks are possible
+
+🚀 OUTILS DE PERFORMANCE :
+
+═══════════════════════════════════════════════════════════════
+🚀 PERF - Profileur de performance
+═══════════════════════════════════════════════════════════════
+
+COMMANDES PRINCIPALES :
+    perf record ./executable            # Enregistrer le profil
+    perf report                         # Voir le rapport
+    perf stat ./executable              # Statistiques générales
+    perf top                            # Profiling en temps réel
+
+EXEMPLE :
+    $ perf stat ./program
+    
+     Performance counter stats for './program':
+    
+              1.234567      task-clock (msec)         #    0.789 CPUs utilized
+                     0      context-switches          #    0.000 K/sec
+                     0      cpu-migrations            #    0.000 K/sec
+                    54      page-faults               #    0.044 M/sec
+             1,234,567      cycles                    #    1.000 GHz
+             1,000,000      instructions              #    0.81  insn per cycle
+               200,000      branches                  #  162.000 M/sec
+                 1,000      branch-misses             #    0.50% of all branches
+
+🔧 MAKEFILES POUR ASSEMBLEUR :
+
+EXEMPLE COMPLET pour LayerCake :
+
+    # Makefile pour projet assembleur
+    ASM = nasm
+    ASMFLAGS = -f elf64 -g
+    LD = ld
+    LDFLAGS = 
+    
+    # Répertoires
+    SRCDIR = src
+    OBJDIR = obj
+    BINDIR = bin
+    
+    # Fichiers
+    SOURCES = $(wildcard $(SRCDIR)/*.asm)
+    OBJECTS = $(SOURCES:$(SRCDIR)/%.asm=$(OBJDIR)/%.o)
+    TARGET = $(BINDIR)/layercake
+    
+    # Règles
+    all: $(TARGET)
+    
+    $(TARGET): $(OBJECTS) | $(BINDIR)
+        $(LD) $(LDFLAGS) $(OBJECTS) -o $@
+    
+    $(OBJDIR)/%.o: $(SRCDIR)/%.asm | $(OBJDIR)
+        $(ASM) $(ASMFLAGS) $< -o $@
+    
+    $(OBJDIR):
+        mkdir -p $(OBJDIR)
+    
+    $(BINDIR):
+        mkdir -p $(BINDIR)
+    
+    clean:
+        rm -rf $(OBJDIR) $(BINDIR)
+    
+    debug: ASMFLAGS += -g
+    debug: $(TARGET)
+    
+    .PHONY: all clean debug
 
 ===============================================================================
-RESSOURCES SUPPLÉMENTAIRES
+9. 🐛 DEBUGGING ET OPTIMISATION (CHASSER LES BUGS)
 ===============================================================================
 
-DOCUMENTATION :
-- Intel Software Developer Manuals
-- AMD64 Architecture Programmer's Manual
-- Linux syscall reference : man 2 syscalls
-- GNU Assembler manual : info as
+🔍 TECHNIQUES DE DÉBOGAGE :
 
-OUTILS EN LIGNE :
-- Godbolt (compiler explorer)
-- Assembly tutorials sur OSDev wiki
-- Linux Assembly HOWTO
+═══════════════════════════════════════════════════════════════
+🔍 DEBUGGING BASIQUE - Trouver les erreurs
+═══════════════════════════════════════════════════════════════
 
-CONSEIL POUR LAYERCAKE :
-Commence par implémenter les utilitaires de base (strlen, memcpy, etc.)
-puis construis progressivement les modules plus complexes (lexer, parser).
-Chaque fonction doit être testable indépendamment.
+ERREURS COURANTES EN ASSEMBLEUR :
+
+1. **STACK DÉSYNCHRONISÉE** :
+   Problème : push/pop non équilibrés
+   
+   # ❌ ERREUR
+   push rax
+   push rbx
+   pop rax      # Récupère rbx dans rax !
+   ret          # Crash : adresse de retour corrompue
+   
+   # ✅ CORRECT
+   push rax
+   push rbx
+   pop rbx      # Récupère rbx
+   pop rax      # Récupère rax
+   ret
+
+2. **CONVENTION D'APPEL VIOLÉE** :
+   Problème : registres callee-saved non préservés
+   
+   # ❌ ERREUR
+   ma_fonction:
+       mov rbx, rdi     # rbx modifié sans sauvegarde !
+       # ... calculs
+       ret              # rbx contient n'importe quoi
+   
+   # ✅ CORRECT
+   ma_fonction:
+       push rbx         # Sauvegarde rbx
+       mov rbx, rdi     # OK maintenant
+       # ... calculs
+       pop rbx          # Restaure rbx
+       ret
+
+3. **ERREUR DE TAILLE DE DONNÉES** :
+   Problème : mélange 32-bit/64-bit
+   
+   # ❌ ERREUR
+   mov rax, 0x123456789ABCDEF0
+   mov eax, 0           # Efface la partie haute de rax !
+   
+   # ✅ CORRECT
+   mov rax, 0x123456789ABCDEF0
+   mov al, 0            # Modifie seulement le byte bas
+
+4. **OUBLI DE VÉRIFICATION D'ERREUR** :
+   Problème : syscall échoue silencieusement
+   
+   # ❌ ERREUR
+   mov rax, 2           # sys_open
+   mov rdi, filename
+   mov rsi, 0
+   syscall
+   # Continue sans vérifier si rax = -1
+   
+   # ✅ CORRECT
+   mov rax, 2           # sys_open
+   mov rdi, filename
+   mov rsi, 0
+   syscall
+   cmp rax, -1
+   je open_failed       # Gère l'erreur
+
+TECHNIQUES DE DEBUGGING :
+
+1. **INSERTION DE PRINTS** :
+   
+   # Fonction utilitaire pour déboguer
+   debug_print_rax:
+       push rbx
+       push rcx
+       push rdx
+       
+       # Convertir rax en chaîne et afficher
+       mov rbx, rax
+       # ... code conversion hexa
+       
+       pop rdx
+       pop rcx
+       pop rbx
+       ret
+   
+   # Utilisation
+   mov rax, 42
+   call debug_print_rax    # Affiche "rax = 42"
+
+2. **VÉRIFICATIONS D'INTÉGRITÉ** :
+   
+   # Vérifier que rsp est aligné sur 16 octets
+   verify_stack_alignment:
+       test rsp, 15        # rsp & 15 doit être 0
+       jnz stack_misaligned
+       ret
+   
+   stack_misaligned:
+       # Afficher erreur et terminer
+       mov rdi, 1
+       call exit
+
+3. **ASSERTIONS** :
+   
+   # Macro pour assertion
+   %macro ASSERT 2
+       cmp %1, %2
+       je %%ok
+       call assertion_failed
+   %%ok:
+   %endmacro
+   
+   # Utilisation
+   ASSERT rax, 42      # Vérifie que rax = 42
+
+═══════════════════════════════════════════════════════════════
+🚀 OPTIMISATION - Rendre le code plus rapide
+═══════════════════════════════════════════════════════════════
+
+PRINCIPES D'OPTIMISATION :
+
+1. **MINIMISER LES ACCÈS MÉMOIRE** :
+   
+   # ❌ LENT - Beaucoup d'accès mémoire
+   mov rax, [variable1]
+   add rax, [variable2]
+   mov [result], rax
+   mov rbx, [variable3]
+   add rbx, [variable4]
+   mov [result2], rbx
+   
+   # ✅ RAPIDE - Utilise les registres
+   mov rax, [variable1]
+   mov rbx, [variable2]
+   add rax, rbx
+   mov rcx, [variable3]
+   mov rdx, [variable4]
+   add rcx, rdx
+   mov [result], rax
+   mov [result2], rcx
+
+2. **OPTIMISER LES BOUCLES** :
+   
+   # ❌ LENT - Comparaison avec zéro
+   mov rcx, 1000
+   boucle:
+       # ... traitement
+       dec rcx
+       cmp rcx, 0
+       jne boucle
+   
+   # ✅ RAPIDE - Utilise les flags automatiquement
+   mov rcx, 1000
+   boucle:
+       # ... traitement
+       dec rcx
+       jnz boucle       # Plus rapide que cmp + jne
+
+3. **ÉVITER LES BRANCHES** :
+   
+   # ❌ LENT - Branchement conditionnel
+   cmp rax, 0
+   je zero_case
+   mov rbx, 1
+   jmp end
+   zero_case:
+       mov rbx, 0
+   end:
+   
+   # ✅ RAPIDE - Calcul direct
+   test rax, rax
+   setnz bl                   # bl = 1 si rax != 0, 0 sinon
+   movzx rbx, bl    # étend bl à rbx
+
+4. **ALIGNEMENT DES DONNÉES** :
+   
+   # ❌ LENT - Données non alignées
+   .section .data
+   byte_var: .byte 1
+   quad_var: .quad 0x123456789ABCDEF0  # Peut être mal aligné
+   
+   # ✅ RAPIDE - Données alignées
+   .section .data
+   .align 4
+   quad_var: .quad 0x123456789ABCDEF0  # Aligné sur 4 octets
+   .align 8
+   long_var: .quad 0x123456789ABCDEF0  # Aligné sur 8 octets
+    
+    # ✅ EXCELLENT - Alignement automatique
+    .section .data
+    .balign 16                  # Aligne sur 16 octets (ligne de cache)
+
+PRÉFETCHING MANUEL :
+
+    # Pour grandes boucles sur des données
+    mov rbx, data_array
+    mov rcx, 1000
+    
+    process_loop:
+        prefetchnta [rbx + 64]  # Précharge la ligne suivante
+        
+        # Traiter les données courantes
+        mov rax, [rbx]
+        # ... traitement
+        
+        add rbx, 64
+        dec rcx
+        jnz process_loop
+
+OPTIMISATIONS POUR LAYERCAKE :
+
+    # Structure de token optimisée pour le cache
+    .struct token
+        .type: .byte 0          # 1 octet
+        .padding1: .byte 0, 0, 0 # 3 octets de padding
+        .value: .long 0         # 4 octets
+        .lexeme: .quad 0        # 8 octets (pointeur)
+        .line: .long 0          # 4 octets
+        .column: .long 0        # 4 octets
+    .endstruct                  # Total: 24 octets (divisible par 8)
+
+===============================================================================
+12. 📖 INSTRUCTIONS ASSEMBLEUR DÉTAILLÉES
+===============================================================================
+
+🔧 CATÉGORIES D'INSTRUCTIONS :
+
+═══════════════════════════════════════════════════════════════
+📊 INSTRUCTIONS DE DONNÉES (Déplacer, copier)
+═══════════════════════════════════════════════════════════════
+
+MOV - Déplacer des données
+    SYNTAXE : mov destination, source
+    EFFET : destination = source
+    FLAGS : Aucun modifié
+    
+    EXEMPLES :
+    mov rax, 42             # rax = 42
+    mov rax, rbx            # rax = rbx
+    mov rax, [rbx]          # rax = mémoire[rbx]
+    mov [rbx], rax          # mémoire[rbx] = rax
+    mov rax, [rbx + 8]      # rax = mémoire[rbx + 8]
+    mov rax, [rbx + rcx*4]  # rax = mémoire[rbx + rcx*4]
+
+LEA - Load Effective Address (Calculer une adresse)
+    SYNTAXE : lea destination, [expression]
+    EFFET : destination = adresse de l'expression
+    FLAGS : Aucun modifié
+    
+    EXEMPLES :
+    lea rax, [rbx + 8]      # rax = rbx + 8 (pas le contenu!)
+    lea rax, [rbx + rcx*4]  # rax = rbx + rcx*4
+    lea rax, [rbx + rcx + 10] # rax = rbx + rcx + 10
+    
+    ASTUCE : LEA peut faire des calculs arithmétiques rapides
+    lea rax, [rdi + rdi*2]  # rax = rdi * 3 (plus rapide que MUL)
+
+XCHG - Échanger deux valeurs
+    SYNTAXE : xchg op1, op2
+    EFFET : op1 ↔ op2
+    FLAGS : Aucun modifié
+    
+    EXEMPLES :
+    xchg rax, rbx           # rax ↔ rbx
+    xchg rax, [rbx]         # rax ↔ mémoire[rbx]
+
+═══════════════════════════════════════════════════════════════
+🧮 INSTRUCTIONS ARITHMÉTIQUES
+═══════════════════════════════════════════════════════════════
+
+ADD - Addition
+    SYNTAXE : add destination, source
+    EFFET : destination = destination + source
+    FLAGS : CF, OF, SF, ZF, PF, AF
+    
+    EXEMPLES :
+    add rax, 10             # rax = rax + 10
+    add rax, rbx            # rax = rax + rbx
+    add rax, [rbx]          # rax = rax + mémoire[rbx]
+
+ADC - Addition avec retenue
+    SYNTAXE : adc destination, source
+    EFFET : destination = destination + source + CF
+    FLAGS : CF, OF, SF, ZF, PF, AF
+    
+    UTILISATION : Addition 128-bit
+    add rax, rbx            # Addition partie basse
+    adc rdx, rcx            # Addition partie haute avec retenue
+
+SUB - Soustraction
+    SYNTAXE : sub destination, source
+    EFFET : destination = destination - source
+    FLAGS : CF, OF, SF, ZF, PF, AF
+    
+    EXEMPLES :
+    sub rax,  10             # rax = rax - 10
+    sub rax, rbx            # rax = rax - rbx
+
+SBB - Soustraction avec emprunt
+    SYNTAXE : sbb destination, source
+    EFFET : destination = destination - source - CF
+    FLAGS : CF, OF, SF, ZF, PF, AF
+
+MUL - Multiplication non-signée
+    SYNTAXE : mul source
+    EFFET : RDX:RAX = RAX * source (128-bit)
+    FLAGS : CF, OF (autres indéfinis)
+    
+    EXEMPLES :
+    mov rax, 1000000000
+    mov rbx, 2000000000
+    mul rbx                 # RDX:RAX = 2000000000000000000
+
+IMUL - Multiplication signée
+    SYNTAXE : imul destination, source
+    EFFET : destination = destination * source
+    FLAGS : CF, OF
+    
+    FORMES :
+    imul rax, rbx           # rax = rax * rbx
+    imul rax, rbx, 10       # rax = rbx * 10
+    imul rax, [rbx], 5      # rax = mémoire[rbx] * 5
+
+DIV - Division non-signée
+    SYNTAXE : div source
+    EFFET : RAX = RDX:RAX / source, RDX = RDX:RAX % source
+    FLAGS : Indéfinis
+    
+    EXEMPLE :
+    mov rax, 100
+    xor rdx, rdx            # Important : RDX doit être 0
+    mov rbx, 7
+    div rbx                 # RAX = 14, RDX = 2
+
+IDIV - Division signée
+    SYNTAXE : idiv source
+    EFFET : RAX = RDX:RAX / source, RDX = RDX:RAX % source
+    FLAGS : Indéfinis
+    
+    EXEMPLE :
+    mov rax, -100
+    cqo                     # Étend RAX vers RDX:RAX
+    mov rbx, 7
+    idiv rbx                # RAX = -14, RDX = -2
+
+INC/DEC - Incrément/Décrément (Macros: increment/decrement)
+    SYNTAXE : inc destination / dec destination
+    EFFET : destination++ / destination--
+    FLAGS : OF, SF, ZF, PF, AF (CF non modifié)
+    
+    EXEMPLES :
+    inc rax                 # increment accumulator → rax++
+    dec rbx                 # decrement base_reg → rbx--
+    inc qword ptr [rbx]     # increment qword ptr [base_reg] → mémoire[rbx]++
+
+NEG - Négation (Macro: negate)
+    SYNTAXE : neg destination
+    EFFET : destination = -destination
+    FLAGS : CF, OF, SF, ZF, PF, AF
+    
+    EXEMPLE :
+    mov rax, 42             # mov accumulator, 42
+    neg rax                 # negate accumulator → rax = -42
+
+═══════════════════════════════════════════════════════════════
+🎯 INSTRUCTIONS LOGIQUES ET BITWISE
+═══════════════════════════════════════════════════════════════
+
+AND - ET logique (Macro: logical_and)
+    SYNTAXE : and destination, source
+    EFFET : destination = destination & source
+    FLAGS : CF=0, OF=0, SF, ZF, PF
+    
+    EXEMPLES :
+    and rax, rbx            # logical_and accumulator, base_reg → rax = rax & rbx
+    and rax, 0xFF           # logical_and accumulator, 0xFF → Garde seulement les 8 bits bas
+    and rax, 0xFFFFFFFE     # logical_and accumulator, 0xFFFFFFFE → Met le bit 0 à 0
+
+OR - OU logique (Macro: logical_or)
+    SYNTAXE : or destination, source
+    EFFET : destination = destination | source
+    FLAGS : CF=0, OF=0, SF, ZF, PF
+    
+    EXEMPLES :
+    or rax, rbx             # logical_or accumulator, base_reg → rax = rax | rbx
+    or rax, 1               # logical_or accumulator, 1 → Met le bit 0 à 1
+
+XOR - OU exclusif (Macro: logical_xor)
+    SYNTAXE : xor destination, source
+    EFFET : destination = destination ^ source
+    FLAGS : CF=0, OF=0, SF, ZF, PF
+    
+    EXEMPLES :
+    xor rax, rbx            # logical_xor accumulator, base_reg → rax = rax ^ rbx
+    xor rax, rax            # logical_xor accumulator, accumulator → rax = 0 (idiome rapide)
+    xor rax, 0xFF           # logical_xor accumulator, 0xFF → Inverse les 8 bits bas
+
+NOT - Complément (Macro: logical_not)
+    SYNTAXE : not destination
+    EFFET : destination = ~destination
+    FLAGS : Aucun modifié
+    
+    EXEMPLE :
+    not rax                 # logical_not accumulator → rax = ~rax
+
+TEST - Test (AND sans stockage) (Macro: logical_test)
+    SYNTAXE : test op1, op2
+    EFFET : Calcule op1 & op2 sans stocker
+    FLAGS : CF=0, OF=0, SF, ZF, PF
+    
+    EXEMPLE :
+    test rax, rax           # logical_test accumulator, accumulator → Test si rax == 0
+
+═══════════════════════════════════════════════════════════════
+🔄 INSTRUCTIONS DE DÉCALAGE ET ROTATION
+═══════════════════════════════════════════════════════════════
+
+SHL/SAL - Décalage à gauche (Macro: shift_left)
+    SYNTAXE : shl destination, count
+    EFFET : destination = destination << count
+    FLAGS : CF, OF, SF, ZF, PF
+    
+    EXEMPLES :
+    shl rax, 1              # shift_left accumulator, 1 → rax = rax * 2
+    shl rax, 3              # shift_left accumulator, 3 → rax = rax * 8
+    shl rax, cl             # shift_left accumulator, cl → rax = rax << cl
+
+SHR - Décalage à droite (non-signé) (Macro: shift_right_logical)
+    SYNTAXE : shr destination, count
+    EFFET : destination = destination >> count (avec zéros)
+    FLAGS : CF, OF, SF, ZF, PF
+    
+    EXEMPLES :
+    shr rax, 1              # shift_right_logical accumulator, 1 → rax = rax / 2
+    shr rax, 3              # shift_right_logical accumulator, 3 → rax = rax / 8
+
+SAR - Décalage à droite (signé) (Macro: shift_right_arithmetic)
+    SYNTAXE : sar destination, count
+    EFFET : destination = destination >> count (avec signe)
+    FLAGS : CF, OF, SF, ZF, PF
+    
+    EXEMPLE :
+    mov rax, -8             # mov accumulator, -8
+    sar rax, 1              # shift_right_arithmetic accumulator, 1 → rax = -4
+    sar rax, 1              # rax = -4 (préserve le signe)
+
+ROL/ROR - Rotation à gauche/droite
+    SYNTAXE : rol destination, count / ror destination, count
+    EFFET : Rotation avec CF
+    FLAGS : CF, OF
+    
+    EXEMPLES :
+    rol rax, 1              # Rotation d'1 bit à gauche
+    ror rax, 8              # Rotation de 8 bits à droite
+
+═══════════════════════════════════════════════════════════════
+🔀 INSTRUCTIONS DE COMPARAISON
+═══════════════════════════════════════════════════════════════
+
+CMP - Comparaison
+    SYNTAXE : cmp op1, op2
+    EFFET : Calcule op1 - op2 sans stocker
+    FLAGS : CF, OF, SF, ZF, PF, AF
+    
+    EXEMPLES :
+    cmp rax, 42             # Compare rax avec 42
+    cmp rax, rbx            # Compare rax avec rbx
+    cmp rax, [rbx]          # Compare rax avec mémoire[rbx]
+    
+    INTERPRÉTATION :
+    ZF = 1 si op1 == op2
+    CF = 1 si op1 < op2 (non-signé)
+    SF != OF si op1 < op2 (signé)
+
+═══════════════════════════════════════════════════════════════
+🦘 INSTRUCTIONS DE SAUT
+═══════════════════════════════════════════════════════════════
+
+JMP - Saut inconditionnel
+    SYNTAXE : jmp destination
+    EFFET : Saut vers destination
+    
+    EXEMPLES :
+    jmp label               # Saut vers label
+    jmp rax                 # Saut vers adresse dans rax
+    jmp [rax]               # Saut vers adresse stockée à [rax]
+
+SAUTS CONDITIONNELS (après CMP) :
+
+JE/JZ - Saut si égal/zéro
+    CONDITION : ZF = 1
+    EXEMPLE : cmp rax, 42; je equal
+
+JNE/JNZ - Saut si différent/non-zéro
+    CONDITION : ZF = 0
+    EXEMPLE : cmp rax, 42; jne not_equal
+
+JL/JNGE - Saut si inférieur (signé)
+    CONDITION : SF != OF
+    EXEMPLE : cmp rax, 42; jl less_than
+
+JLE/JNG - Saut si inférieur ou égal (signé)
+    CONDITION : ZF = 1 ou SF != OF
+    EXEMPLE : cmp rax, 42; jle less_or_equal
+
+JG/JNLE - Saut si supérieur (signé)
+    CONDITION : ZF = 0 et SF = OF
+    EXEMPLE : cmp rax, 42; jg greater_than
+
+JGE/JNL - Saut si supérieur ou égal (signé)
+    CONDITION : SF = OF
+    EXEMPLE : cmp rax, 42; jge greater_or_equal
+
+JB/JNAE - Saut si inférieur (non-signé)
+    CONDITION : CF = 1
+    EXEMPLE : cmp rax, 42; jb below
+
+JBE/JNA - Saut si inférieur ou égal (non-signé)
+    CONDITION : CF = 1 ou ZF = 1
+    EXEMPLE : cmp rax, 42; jbe below_or_equal
+
+JA/JNBE - Saut si supérieur (non-signé)
+    CONDITION : CF = 0 et ZF = 0
+    EXEMPLE : cmp rax, 42; ja above
+
+JAE/JNB - Saut si supérieur ou égal (non-signé)
+    CONDITION : CF = 0
+    EXEMPLE : cmp rax, 42; jae above_or_equal
+
+SAUTS SUR FLAGS SPÉCIFIQUES :
+
+JC - Saut si carry
+    CONDITION : CF = 1
+
+JNC - Saut si pas carry
+    CONDITION : CF = 0
+
+JO - Saut si overflow
+    CONDITION : OF = 1
+
+JNO - Saut si pas overflow
+    CONDITION : OF = 0
+
+JS - Saut si négatif
+    CONDITION : SF = 1
+
+JNS - Saut si positif
+    CONDITION : SF = 0
+
+JP/JPE - Saut si parité paire
+    CONDITION : PF = 1
+
+JNP/JPO - Saut si parité impaire
+    CONDITION : PF = 0
+
+═══════════════════════════════════════════════════════════════
+📞 INSTRUCTIONS D'APPEL DE FONCTION
+═══════════════════════════════════════════════════════════════
+
+CALL - Appel de fonction
+    SYNTAXE : call destination
+    EFFET : push rip; jmp destination
+    
+    EXEMPLES :
+    call fonction           # Appel direct
+    call rax                # Appel indirect (adresse dans rax)
+    call [rax]              # Appel indirect (adresse à [rax])
+
+RET - Retour de fonction
+    SYNTAXE : ret [n]
+    EFFET : pop rip [; add rsp, n]
+    
+    EXEMPLES :
+    ret                     # Retour simple
+    ret 16                  # Retour + nettoie 16 octets de pile
+
+═══════════════════════════════════════════════════════════════
+📚 INSTRUCTIONS DE PILE
+═══════════════════════════════════════════════════════════════
+
+PUSH - Empiler
+    SYNTAXE : push source
+    EFFET : sub rsp, 8; mov [rsp], source
+    
+    EXEMPLES :
+    push rax                # Empile rax
+    push 42                 # Empile 42
+    push [rbx]              # Empile mémoire[rbx]
+
+POP - Dépiler
+    SYNTAXE : pop destination
+    EFFET : mov destination, [rsp]; add rsp, 8
+    
+    EXEMPLES :
+    pop rax                 # Dépile vers rax
+    pop [rbx]               # Dépile vers mémoire[rbx]
+
+PUSHF/POPF - Empiler/dépiler les flags
+    SYNTAXE : pushf / popf
+    EFFET : Sauvegarde/restaure le registre de flags
+    
+    UTILISATION : Sauvegarder l'état des flags
+    pushf                   # Sauvegarde flags
+    # ... code qui modifie les flags
+    popf                    # Restaure flags
+
+═══════════════════════════════════════════════════════════════
+🧬 INSTRUCTIONS DE CONVERSION
+═══════════════════════════════════════════════════════════════
+
+MOVZX - Déplacer avec extension zéro
+    SYNTAXE : movzx destination, source
+    EFFET : destination = source avec zéros ajoutés
+    
+    EXEMPLES :
+    movzx rax, bl           # rax = bl (avec zéros)
+    movzx rax, bx           # rax = bx (avec zéros)
+    movzx rax, ebx          # rax = ebx (avec zéros)
+
+MOVSX - Déplacer avec extension de signe
+    SYNTAXE : movsx destination, source
+    EFFET : destination = source avec signe étendu
+    
+    EXEMPLES :
+    movsx rax, bl           # rax = bl (avec signe étendu)
+    movsx rax, bx           # rax = bx (avec signe étendu)
+
+MOVSXD - Déplacer avec extension de signe 32→64
+    SYNTAXE : movsxd destination, source
+    EFFET : destination = source (32-bit → 64-bit signé)
+    
+    EXEMPLE :
+    movsxd rax, ebx         # rax = ebx (32→64 signé)
+
+CWD/CDQ/CQO - Extension de signe
+    SYNTAXE : cwd / cdq / cqo
+    EFFET : Étend AX→DX:AX / EAX→EDX:EAX / RAX→RDX:RAX
+    
+    UTILISATION : Préparer pour division signée
+    mov rax, -100
+    cqo                     # RDX:RAX = -100 (étendu)
+    idiv rbx                # Division signée correcte
+
+═══════════════════════════════════════════════════════════════
+🔗 INSTRUCTIONS DE CHAÎNES
+═══════════════════════════════════════════════════════════════
+
+MOVSB/MOVSW/MOVSD/MOVSQ - Déplacer chaîne (Macros: move_string_byte/word/dword/qword)
+    SYNTAXE : movsb / movsw / movsd / movsq
+    EFFET : mov [rdi], [rsi]; inc/dec rsi,rdi
+    
+    UTILISATION : Copier des blocs de mémoire
+    mov rsi, source         # mov source_index, source
+    mov rdi, destination    # mov destination_index, destination
+    mov rcx, 1000           # mov counter, 1000
+    rep movsb               # repeat move_string_byte
+
+STOSB/STOSW/STOSD/STOSQ - Stocker dans chaîne (Macros: store_string_byte/word/dword/qword)
+    SYNTAXE : stosb / stosw / stosd / stosq
+    EFFET : mov [rdi], al/ax/eax/rax; inc/dec rdi
+    
+    UTILISATION : Initialiser des blocs de mémoire
+    mov rax, 0              # mov accumulator, 0
+    mov rdi, buffer         # mov destination_index, buffer
+    mov rcx, 1000           # mov counter, 1000
+    rep stosb               # repeat store_string_byte
+
+LODSB/LODSW/LODSD/LODSQ - Charger depuis chaîne (Macros: load_string_byte/word/dword/qword)
+    SYNTAXE : lodsb / lodsw / lodsd / lodsq
+    EFFET : mov al/ax/eax/rax, [rsi]; inc/dec rsi
+    
+    UTILISATION : Lire séquentiellement
+    mov rsi, string         # mov source_index, string
+    lodsb                   # load_string_byte → al = premier caractère
+    lodsb                   # load_string_byte → al = deuxième caractère
+
+SCASB/SCASW/SCASD/SCASQ - Comparer chaîne (Macros: scan_string_byte/word/dword/qword)
+    SYNTAXE : scasb / scasw / scasd / scasq
+    EFFET : cmp al/ax/eax/rax, [rdi]; inc/dec rdi
+    
+    UTILISATION : Chercher dans une chaîne
+    mov rax, 0              # mov accumulator, 0 → Chercher le caractère nul
+    mov rdi, string         # mov destination_index, string → Adresse de la chaîne
+    mov rcx, 1000           # mov counter, 1000 → Longueur maximum
+    repne scasb             # repeat_not_equal scan_string_byte → Cherche jusqu'à trouver 0
+
+CMPSB/CMPSW/CMPSD/CMPSQ - Comparer chaînes (Macros: compare_string_byte/word/dword/qword)
+    SYNTAXE : cmpsb / cmpsw / cmpsd / cmpsq
+    EFFET : cmp [rsi], [rdi]; inc/dec rsi,rdi
+    
+    UTILISATION : Comparer deux chaînes
+    mov rsi, string1        # mov source_index, string1
+    mov rdi, string2        # mov destination_index, string2
+    mov rcx, 100            # mov counter, 100
+    repe cmpsb              # repeat_equal compare_string_byte → Compare jusqu'à différence
+
+═══════════════════════════════════════════════════════════════
+🔁 PRÉFIXES DE RÉPÉTITION
+═══════════════════════════════════════════════════════════════
+
+REP - Répéter (Macro: repeat)
+    EFFET : Répète l'instruction RCX fois
+    
+    EXEMPLE :
+    mov rcx, 1000           # mov counter, 1000
+    rep stosb               # repeat store_string_byte → Répète stosb 1000 fois
+
+REPE/REPZ - Répéter si égal/zéro (Macros: repeat_equal/repeat_zero)
+    EFFET : Répète tant que ZF=1 et RCX>0
+    
+    EXEMPLE :
+    mov rcx, 100            # mov counter, 100
+    repe cmpsb              # repeat_equal compare_string_byte → Compare jusqu'à différence
+
+REPNE/REPNZ - Répéter si différent/non-zéro (Macros: repeat_not_equal/repeat_not_zero)
+    EFFET : Répète tant que ZF=0 et RCX>0
+    
+    EXEMPLE :
+    mov rcx, 1000           # mov counter, 1000
+    repne scasb             # repeat_not_equal scan_string_byte → Cherche jusqu'à trouver
+
+═══════════════════════════════════════════════════════════════
+🎛️ INSTRUCTIONS DE CONTRÔLE
+═══════════════════════════════════════════════════════════════
+
+NOP - Aucune opération (Macro: no_operation)
+    SYNTAXE : nop
+    EFFET : Aucun (utilise 1 cycle)
+    
+    UTILISATION : Alignement, temporisation, padding
+
+HLT - Arrêt (Macro: halt_processor)
+    SYNTAXE : hlt
+    EFFET : Arrête le processeur (privilège requis)
+
+CLC/STC - Effacer/mettre carry (Macros: clear_carry/set_carry)
+    SYNTAXE : clc / stc
+    EFFET : CF = 0 / CF = 1
+
+CLD/STD - Effacer/mettre direction (Macros: clear_direction/set_direction)
+    SYNTAXE : cld / std
+    EFFET : DF = 0 / DF = 1 (pour instructions chaînes)
+
+CLI/STI - Effacer/mettre interruptions (Macros: clear_interrupt/set_interrupt)
+    SYNTAXE : cli / sti
+    EFFET : IF = 0 / IF = 1 (privilège requis)
+
+===============================================================================
+15. 🎯 INSTRUCTIONS AVANCÉES ET LEURS MACROS OFFICIELLES
+===============================================================================
+
+═══════════════════════════════════════════════════════════════
+🔢 INSTRUCTIONS ARITHMÉTIQUES AVANCÉES
+═══════════════════════════════════════════════════════════════
+
+MULTIPLICATION ET DIVISION :
+    
+    # Multiplication signée
+    multiply_signed accumulator, base_reg     ; imul rax, rbx
+    
+    # Division signée (quotient dans rax, reste dans rdx)
+    divide_signed base_reg                    ; idiv rbx
+    
+    # Multiplication non signée
+    multiply_unsigned base_reg                ; mul rbx
+    
+    # Division non signée
+    divide_unsigned base_reg                  ; div rbx
+    
+    # Adresse effective (très utile pour les calculs)
+    load_effective_addr accumulator, [base_reg + data_reg*4 + 16]  ; lea rax, [rbx + rcx*4 + 16]
+
+OPÉRATIONS DE DÉCALAGE BITWISE :
+    
+    # Décalage logique à gauche (multiplication par 2^n)
+    shift_left accumulator, 3                 ; shl rax, 3 → rax = rax * 8
+    
+    # Décalage logique à droite (division par 2^n, non signé)
+    shift_right_logical accumulator, 2        ; shr rax, 2 → rax = rax / 4
+    
+    # Décalage arithmétique à droite (division par 2^n, signé)
+    shift_arith_right accumulator, 1          ; sar rax, 1 → rax = rax / 2 (avec signe)
+    
+    # Rotation à gauche
+    rotate_left accumulator, 4                ; rol rax, 4
+    
+    # Rotation à droite
+    rotate_right accumulator, 2               ; ror rax, 2
+
+OPÉRATIONS DE TEST DE BITS :
+    
+    # Test d'un bit (résultat dans les flags)
+    bit_test accumulator, 5                   ; bt rax, 5 → teste le bit 5
+    
+    # Test et mise à 1 d'un bit
+    bit_test_set accumulator, 7               ; bts rax, 7 → teste et met à 1 le bit 7
+    
+    # Test et mise à 0 d'un bit
+    bit_test_reset accumulator, 3             ; btr rax, 3 → teste et met à 0 le bit 3
+    
+    # Test et complément d'un bit
+    bit_test_complement accumulator, 2        ; btc rax, 2 → teste et inverse le bit 2
+
+═══════════════════════════════════════════════════════════════
+🔤 INSTRUCTIONS DE CHAÎNES DE CARACTÈRES
+═══════════════════════════════════════════════════════════════
+
+DÉPLACEMENT DE CHAÎNES :
+    
+    # Copie d'octets
+    repeat move_string_byte                   ; rep movsb → copie [rsi] vers [rdi], répété rcx fois
+    
+    # Copie de mots (16 bits)
+    repeat move_string_word                   ; rep movsw
+    
+    # Copie de double-mots (32 bits)
+    repeat move_string_dword                  ; rep movsd
+    
+    # Copie de quad-mots (64 bits)
+    repeat move_string_qword                  ; rep movsq
+
+CHARGEMENT ET STOCKAGE :
+    
+    # Charge depuis [rsi] vers al/ax/eax/rax
+    load_string_byte                          ; lodsb → al = [rsi], rsi++
+    load_string_word                          ; lodsw → ax = [rsi], rsi += 2
+    load_string_dword                         ; lodsd → eax = [rsi], rsi += 4
+    load_string_qword                         ; lodsq → rax = [rsi], rsi += 8
+    
+    # Stocke al/ax/eax/rax vers [rdi]
+    store_string_byte                         ; stosb → [rdi] = al, rdi++
+    store_string_word                         ; stosw → [rdi] = ax, rdi += 2
+    store_string_dword                        ; stosd → [rdi] = eax, rdi += 4
+    store_string_qword                        ; stosq → [rdi] = rax, rdi += 8
+
+RECHERCHE ET COMPARAISON :
+    
+    # Recherche d'une valeur dans une chaîne
+    repeat_not_equal scan_string_byte         ; repne scasb → recherche al dans [rdi]
+    
+    # Comparaison de chaînes
+    repeat_equal compare_string_byte          ; repe cmpsb → compare [rsi] avec [rdi]
+
+═══════════════════════════════════════════════════════════════
+🎯 INSTRUCTIONS CONDITIONNELLES SET
+═══════════════════════════════════════════════════════════════
+
+ASSIGNATION CONDITIONNELLE (évite les branchements) :
+    
+    # Met à 1 si condition vraie, 0 sinon
+    set_equal bl                              ; sete bl → bl = 1 si ZF=1, 0 sinon
+    set_not_equal bl                          ; setne bl → bl = 1 si ZF=0, 0 sinon
+    set_zero bl                               ; setz bl → équivalent à sete
+    set_not_zero bl                           ; setnz bl → équivalent à setne
+    
+    # Comparaisons non signées
+    set_above bl                              ; seta bl → bl = 1 si CF=0 et ZF=0
+    set_below bl                              ; setb bl → bl = 1 si CF=1
+    
+    # Comparaisons signées
+    set_greater bl                            ; setg bl → bl = 1 si ZF=0 et SF=OF
+    set_less bl                               ; setl bl → bl = 1 si SF≠OF
+    
+    # Extension vers registre plus grand
+    zero_extend_byte base_reg, bl             ; movzx rbx, bl → rbx = bl (avec zéros)
+
+═══════════════════════════════════════════════════════════════
+🚀 OPTIMISATIONS MÉMOIRE ET CACHE
+═══════════════════════════════════════════════════════════════
+
+PRÉCHARGEMENT DE CACHE :
+    
+    # Précharge une ligne de cache
+    prefetch_nta [base_reg]                   ; prefetchnta [rbx] → précharge le début
+    prefetch_t0 [base_reg + cache_line_size]  ; prefetcht0 [rbx + 64] → précharge en L1
+    prefetch_t1 [base_reg + 128]              ; prefetcht1 [rbx + 128] → précharge en L2
+    prefetch_t2 [base_reg + 192]              ; prefetcht2 [rbx + 192] → précharge en L3
+
+OPÉRATIONS ATOMIQUES :
+    
+    # Échange atomique de valeurs
+    exchange accumulator, base_reg            ; xchg rax, rbx
+    
+    # Échange conditionnel (compare et échange)
+    compare_exchange [base_reg], data_reg     ; cmpxchg [rbx], rcx
+    
+    # Échange et addition atomique
+    exchange_add [base_reg], data_reg         ; xadd [rbx], rcx
+
+EXTENSION DE DONNÉES :
+    
+    # Extension avec zéros
+    zero_extend_byte accumulator, bl          ; movzx rax, bl → rax = bl avec zéros
+    
+    # Extension avec signe
+    sign_extend_byte accumulator, bl          ; movsx rax, bl → rax = bl avec signe
+    sign_extend_qword accumulator, data_reg   ; movsxd rax, ecx → rax = ecx avec signe
+
+===============================================================================
+16. 📚 GUIDE COMPLET DES MACROS OFFICIELLES LAYERCAKE
+===============================================================================
+
+Ce projet LayerCake fournit maintenant un système complet de macros officielles
+qui remplacent les nombres cryptiques par les vrais noms architecturaux et
+système. Ces macros suivent scrupuleusement la documentation officielle
+Intel x86-64 et POSIX/Linux.
+
+🎯 AVANTAGES DES MACROS OFFICIELLES :
+- Code plus lisible et compréhensible
+- Correspondance exacte avec la documentation officielle
+- Maintenance simplifiée
+- Apprentissage facilité pour les débutants
+- Compatibilité avec les standards industriels
+
+═══════════════════════════════════════════════════════════════
+📋 UTILISATION PRATIQUE DES MACROS DANS VOTRE CODE
+═══════════════════════════════════════════════════════════════
+
+INCLUSION DES MACROS :
+    %include "LC_core/lc_syscalls.asm"      ; Charge toutes les macros officielles
+
+EXEMPLE COMPLET AVEC MACROS :
+    section .data
+    message db "Hello, World!", 10, 0
+    msg_len equ $ - message - 1
+
+    section .text
+    global _start
+
+    _start:
+        ; Écrire le message avec les macros officielles
+        mov syscall_num, sys_write          ; au lieu de: mov rax, 1
+        mov first_param, stdout_fd          ; au lieu de: mov rdi, 1
+        mov second_param, message           ; au lieu de: mov rsi, message
+        mov third_param, msg_len            ; au lieu de: mov rdx, msg_len
+        syscall
+
+        ; Sortir proprement
+        mov syscall_num, sys_exit           ; au lieu de: mov rax, 60
+        mov first_param, success_code       ; au lieu de: mov rdi, 0
+        syscall
+
+═══════════════════════════════════════════════════════════════
+🎯 MACROS D'INSTRUCTIONS AVANCÉES
+═══════════════════════════════════════════════════════════════
+
+INSTRUCTIONS DE CHAÎNES :
+    ; Copier un bloc de mémoire
+    mov source_index, src_buffer          ; mov rsi, src_buffer
+    mov destination_index, dst_buffer     ; mov rdi, dst_buffer
+    mov counter, 1000                     ; mov rcx, 1000
+    repeat move_string_byte               ; rep movsb
+
+    ; Initialiser un buffer
+    mov accumulator, 0                    ; mov rax, 0
+    mov destination_index, buffer         ; mov rdi, buffer
+    mov counter, 1000                     ; mov rcx, 1000
+    repeat store_string_byte              ; rep stosb
+
+INSTRUCTIONS LOGIQUES :
+    ; Masquer les bits hauts
+    logical_and accumulator, 0xFF         ; and rax, 0xFF
+    
+    ; Activer un bit
+    logical_or accumulator, 0x80          ; or rax, 0x80
+    
+    ; Inverser des bits
+    logical_xor accumulator, 0xFF         ; xor rax, 0xFF
+    
+    ; Tester un bit
+    logical_test accumulator, 0x80        ; test rax, 0x80
+    jump_not_zero bit_is_set              ; jnz bit_is_set
+
+DÉCALAGES ET ROTATIONS :
+    
+    # Multiplication rapide par 8
+    shift_left accumulator, 3                 ; shl rax, 3
+    
+    # Division rapide par 4 (signé)
+    shift_right_arithmetic data_reg, 2        ; sar rdx, 2
+    
+    # Rotation pour manipulation de bits
+    rotate_left base_reg, 1               ; rol rbx, 1
+
+═══════════════════════════════════════════════════════════════
+🚀 MACROS D'OPTIMISATION AVANCÉES
+═══════════════════════════════════════════════════════════════
+
+MULTIPLICATION RAPIDE PAR CONSTANTES :
+    ; Utilise les décalages pour les puissances de 2
+    FAST_MUL_2 accumulator, data_reg      ; rax = rdx * 2
+    FAST_MUL_4 accumulator, data_reg      ; rax = rdx * 4
+    FAST_MUL_8 accumulator, data_reg      ; rax = rdx * 8
+    FAST_MUL_16 accumulator, data_reg     ; rax = rdx * 16
+    
+    ; Utilise LEA pour les multiplications complexes
+    FAST_MUL_3 accumulator, data_reg      ; rax = rdx * 3
+    FAST_MUL_5 accumulator, data_reg      ; rax = rdx * 5
+    FAST_MUL_9 accumulator, data_reg      ; rax = rdx * 9
+
+DIVISION RAPIDE PAR CONSTANTES :
+    FAST_DIV_2 accumulator, accumulator   ; rax = rax / 2 (signé)
+    FAST_DIV_4 data_reg, data_reg        ; rdx = rdx / 4 (signé)
+    FAST_DIV_8 base_reg, base_reg        ; rbx = rbx / 8 (signé)
+
+SÉLECTION SANS BRANCHEMENT :
+    ; Évite les branchements coûteux
+    BRANCHLESS_SELECT accumulator, data_reg, 100, 0
+    ; Équivalent à: rax = (rdx != 0) ? 100 : 0
+
+EFFACEMENT MÉMOIRE OPTIMISÉ :
+    CLEAR_MEMORY buffer, 1000            ; Efface 1000 octets
+    CLEAR_QWORDS buffer, 125             ; Efface 125 qwords (1000 octets)
+
+═══════════════════════════════════════════════════════════════
+🎛️ MACROS DE CONTRÔLE DE FLUX
+═══════════════════════════════════════════════════════════════
+
+SAUTS CONDITIONNELS :
+    cmp accumulator, 0                   ; cmp rax, 0
+    jump_equal zero_found                ; je zero_found
+    jump_not_equal non_zero_found        ; jne non_zero_found
+    jump_greater positive_number         ; jg positive_number
+    jump_less negative_number            ; jl negative_number
+
+INSTRUCTIONS DE CONDITION :
+    ; Mouvement conditionnel (évite les branchements)
+    cmov_equal accumulator, base_reg     ; cmove rax, rbx
+    cmov_greater accumulator, data_reg   ; cmovg rax, rdx
+    cmov_less accumulator, counter       ; cmovl rax, rcx
+
+INSTRUCTIONS DE MISE À JOUR :
+    ; Met un byte à 1 ou 0 selon la condition
+    set_equal al                         ; sete al
+    set_greater bl                       ; setg bl
+    set_less cl                          ; setl cl
+
+═══════════════════════════════════════════════════════════════
+🔧 MACROS DE GESTION MÉMOIRE
+═══════════════════════════════════════════════════════════════
+
+PRÉCHARGEMENT DE CACHE :
+    ; Améliore les performances en préchargeant les données
+    prefetch_t0 [data_reg]              ; prefetcht0 [rbx] → précharge le début
+    prefetch_t1 [data_reg + 64]         ; prefetcht1 [rbx + 64] → précharge en L1
+    prefetch_t2 [data_reg + 128]        ; prefetcht2 [rbx + 128] → précharge en L2
+    prefetch_t3 [data_reg + 192]        ; prefetcht3 [rbx + 192] → précharge en L3
+
+BARRIÈRES MÉMOIRE :
+    ; Synchronisation mémoire pour code multi-thread
+    memory_fence                         ; mfence - barrière complète
+    load_fence                           ; lfence - barrière de lecture
+    store_fence                          ; sfence - barrière d'écriture
+
+OPÉRATIONS ATOMIQUES :
+    ; Échange atomique
+    atomic_exchange accumulator, [data_reg]  ; xchg rax, [rdi]
+    
+    ; Comparaison et échange atomique
+    atomic_compare_exchange [data_reg], base_reg  ; cmpxchg [rdi], rbx
 
 ===============================================================================
