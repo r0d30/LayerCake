@@ -3,29 +3,15 @@
                               Pour le projet LayerCake
 ===============================================================================
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
 LayerCake Compiler Assembly Guide - Version Détaillée
-=======
-<<<<<<< HEAD
-=======
-LayerCake Compiler Assembly Guide
->>>>>>> Stashed changes
-=======
-LayerCake Compiler Assembly Guide - Version Détaillée
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
 Licensed under MIT License with Enhanced Attribution
 
 IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 See LICENSE file for full terms and restrictions.
-<<<<<<< Updated upstream
-=======
 
 ===============================================================================
 
-<<<<<<< HEAD
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
 SOMMAIRE :
 1. Concepts de base
 2. Syntaxe AT&T vs Intel
@@ -36,7 +22,6 @@ SOMMAIRE :
 7. Outils de développement
 8. Debugging et optimisation
 9. Bonnes pratiques pour LayerCake
->>>>>>> Stashed changes
 
 ===============================================================================
 
@@ -323,7 +308,6 @@ Imaginez 16 boîtes étiquetées où vous pouvez stocker des nombres instantané
 - Mémoire RAM = Armoire dans la pièce (plus lent à accéder)
 - Disque dur = Entrepôt en ville (très lent à accéder)
 
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 📋 LES REGISTRES x86-64 (64 bits) EXPLIQUÉS UN PAR UN :
 
 🔢 REGISTRES GÉNÉRAUX (vos tiroirs principaux) :

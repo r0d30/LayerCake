@@ -1,8 +1,3 @@
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
 ;===============================================================================
 ; LayerCake Compiler - Main Entry Point
 ; Copyright (c) 2024-2025 LayerCake Project
@@ -17,19 +12,9 @@
 ; Contact: noel.rodrigue.7850@gmail.com for commercial licensing.
 ;===============================================================================
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
 ; Include LayerCake syscall definitions and macros
 %include "src/lc_syscalls.asm"
 
-=======
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
->>>>>>> Stashed changes
-=======
-; Include LayerCake syscall definitions and macros
-%include "src/lc_syscalls.asm"
-
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 section .data
     hello db 'Hello, world!', 0xA  ; message with newline
     hello_len equ $ - hello
@@ -47,5 +32,5 @@ _start:
 
     ; exit(0) - using official architecture names  
     mov syscall_num, sys_exit               ; system call number for exit
-    mov first_param, exit_success           ; exit code for success
+    mov first_param, EXIT_SUCCESS           ; exit code for success
     syscall

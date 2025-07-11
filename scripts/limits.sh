@@ -1,188 +1,71 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# limits.sh - LayerCake project limits and constraints checker
+# Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
 
-<<<<<<< HEAD
-# limits.sh - Script to define resource limits
+# Maximum file sizes (in lines)
+MAX_ASM_FILE_SIZE=2000
+MAX_HEADER_SIZE=500
+MAX_DOC_SIZE=5000
+MAX_SCRIPT_SIZE=200
 
-# Colors
-=======
-# limits.sh - Script pour définir les limites de ressources
+# Maximum project complexity
+MAX_TOTAL_FILES=100
+MAX_NESTING_DEPTH=5
+MAX_FUNCTION_SIZE=50
 
-# Couleurs
->>>>>>> 3f3b36a (Add initial project structure with Makefile, scripts, and configuration files)
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+# Code quality limits
+MAX_LINE_LENGTH=120
+MAX_COMMENT_GAP=10
+MIN_COMMENT_RATIO=0.15
 
-<<<<<<< HEAD
-echo -e "${GREEN}Configuring security limits${NC}"
+# Performance constraints
+MAX_COMPILE_TIME=30  # seconds
+MAX_MEMORY_USAGE=512 # MB
+MAX_BINARY_SIZE=10   # MB
 
-# Define limits
-set_limits() {
-    echo "Setting resource limits..."
+echo "LayerCake Project Limits and Constraints"
+echo "========================================"
+echo ""
+echo "File Size Limits:"
+echo "  Assembly files: $MAX_ASM_FILE_SIZE lines"
+echo "  Header files: $MAX_HEADER_SIZE lines"
+echo "  Documentation: $MAX_DOC_SIZE lines"
+echo "  Scripts: $MAX_SCRIPT_SIZE lines"
+echo ""
+echo "Project Complexity:"
+echo "  Total files: $MAX_TOTAL_FILES"
+echo "  Nesting depth: $MAX_NESTING_DEPTH"
+echo "  Function size: $MAX_FUNCTION_SIZE lines"
+echo ""
+echo "Code Quality:"
+echo "  Line length: $MAX_LINE_LENGTH characters"
+echo "  Comment gap: $MAX_COMMENT_GAP lines"
+echo "  Comment ratio: $MIN_COMMENT_RATIO"
+echo ""
+echo "Performance:"
+echo "  Compile time: $MAX_COMPILE_TIME seconds"
+echo "  Memory usage: $MAX_MEMORY_USAGE MB"
+echo "  Binary size: $MAX_BINARY_SIZE MB"
+
+# Check current project against limits
+check_limits() {
+    echo ""
+    echo "Current Project Status:"
+    echo "======================="
     
-    # Virtual memory: 10MB
-    ulimit -v 10240
-    echo "✓ Virtual memory limited to 10MB"
+    # Count files
+    total_files=$(find . -name "*.asm" -o -name "*.sh" -o -name "*.md" -o -name "*.txt" | wc -l)
+    echo "Total files: $total_files/$MAX_TOTAL_FILES"
     
-    # Number of processes: 10
-    ulimit -u 10
-    echo "✓ Number of processes limited to 10"
-    
-    # CPU time: 5 seconds
-    ulimit -t 5
-    echo "✓ CPU time limited to 5 seconds"
-    
-    # File size: 1MB
-    #ulimit -f 1024
-    #echo "✓ File size limited to 1MB"
-    
-    # Stack size: 1MB
-    ulimit -s 1024
-    echo "✓ Stack size limited to 1MB"
-    
-    # Number of open files: 10
-    ulimit -n 10
-    echo "✓ Number of open files limited to 10"
+    # Check largest files
+    echo ""
+    echo "Largest files:"
+    find . -name "*.asm" -o -name "*.md" -o -name "*.txt" | head -10 | while read file; do
+        lines=$(wc -l < "$file" 2>/dev/null || echo 0)
+        echo "  $file: $lines lines"
+    done
 }
 
-# Display current limits
-show_limits() {
-    echo -e "\n${YELLOW}Current limits:${NC}"
-    echo "Virtual memory: $(ulimit -v) KB"
-    echo "Processes: $(ulimit -u)"
-    echo "CPU time: $(ulimit -t) seconds"
-    echo "File size: $(ulimit -f) blocks"
-    echo "Stack size: $(ulimit -s) KB"
-    echo "Open files: $(ulimit -n)"
-}
-
-# Test a program with limits
-test_with_limits() {
-    local program=$1
-    echo -e "\n${GREEN}Testing $program with limits${NC}"
-    
-    # Execute with timeout and monitoring
-=======
-echo -e "${GREEN}Configuration des limites de sécurité${NC}"
-
-# Définir les limites
-set_limits() {
-    echo "Définition des limites de ressources..."
-    
-    # Mémoire virtuelle : 10MB
-    ulimit -v 10240
-    echo "✓ Mémoire virtuelle limitée à 10MB"
-    
-    # Nombre de processus : 10
-    ulimit -u 10
-    echo "✓ Nombre de processus limité à 10"
-    
-    # Temps CPU : 5 secondes
-    ulimit -t 5
-    echo "✓ Temps CPU limité à 5 secondes"
-    
-    # Taille des fichiers : 1MB
-    #ulimit -f 1024
-    #echo "✓ Taille des fichiers limitée à 1MB"
-    
-    # Taille de la pile : 1MB
-    ulimit -s 1024
-    echo "✓ Taille de la pile limitée à 1MB"
-    
-    # Nombre de fichiers ouverts : 10
-    ulimit -n 10
-    echo "✓ Nombre de fichiers ouverts limité à 10"
-}
-
-# Afficher les limites actuelles
-show_limits() {
-    echo -e "\n${YELLOW}Limites actuelles :${NC}"
-    echo "Mémoire virtuelle : $(ulimit -v) KB"
-    echo "Processus : $(ulimit -u)"
-    echo "Temps CPU : $(ulimit -t) secondes"
-    echo "Taille fichiers : $(ulimit -f) blocs"
-    echo "Taille pile : $(ulimit -s) KB"
-    echo "Fichiers ouverts : $(ulimit -n)"
-}
-
-# Tester un programme avec limites
-test_with_limits() {
-    local program=$1
-    echo -e "\n${GREEN}Test de $program avec limites${NC}"
-    
-    # Exécuter avec timeout et monitoring
->>>>>>> 3f3b36a (Add initial project structure with Makefile, scripts, and configuration files)
-    timeout 10s /usr/bin/time -v $program 2>&1 | {
-        while read line; do
-            case $line in
-                *"Maximum resident set size"*)
-<<<<<<< HEAD
-                    echo "Max RAM used: $line"
-                    ;;
-                *"User time"*)
-                    echo "User time: $line"
-                    ;;
-                *"System time"*)
-                    echo "System time: $line"
-                    ;;
-                *"Percent of CPU"*)
-                    echo "CPU usage: $line"
-=======
-                    echo "RAM max utilisée : $line"
-                    ;;
-                *"User time"*)
-                    echo "Temps utilisateur : $line"
-                    ;;
-                *"System time"*)
-                    echo "Temps système : $line"
-                    ;;
-                *"Percent of CPU"*)
-                    echo "Utilisation CPU : $line"
->>>>>>> 3f3b36a (Add initial project structure with Makefile, scripts, and configuration files)
-                    ;;
-            esac
-        done
-    }
-}
-
-<<<<<<< HEAD
-# Main script
-=======
-# Script principal
->>>>>>> 3f3b36a (Add initial project structure with Makefile, scripts, and configuration files)
-case $1 in
-    "set")
-        set_limits
-        show_limits
-        ;;
-    "show")
-        show_limits
-        ;;
-    "test")
-        if [ -z "$2" ]; then
-<<<<<<< HEAD
-            echo "Usage: $0 test <program>"
-=======
-            echo "Usage: $0 test <programme>"
->>>>>>> 3f3b36a (Add initial project structure with Makefile, scripts, and configuration files)
-            exit 1
-        fi
-        set_limits
-        test_with_limits $2
-        ;;
-    *)
-<<<<<<< HEAD
-        echo "Usage: $0 {set|show|test <program>}"
-        echo "  set   - Set limits"
-        echo "  show  - Display limits"
-        echo "  test  - Test a program with limits"
-=======
-        echo "Usage: $0 {set|show|test <programme>}"
-        echo "  set   - Définir les limites"
-        echo "  show  - Afficher les limites"
-        echo "  test  - Tester un programme avec limites"
->>>>>>> 3f3b36a (Add initial project structure with Makefile, scripts, and configuration files)
-        exit 1
-        ;;
-esac
+if [ "$1" = "--check" ]; then
+    check_limits
+fi

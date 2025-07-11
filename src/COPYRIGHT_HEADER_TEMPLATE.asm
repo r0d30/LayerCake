@@ -7,36 +7,25 @@
 ; This file is part of the LayerCake programming language project.
 ; See LICENSE file in project root for full license terms.
 ; 
-<<<<<<< Updated upstream
 ; IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 ; Attribution required for any software compiled with LayerCake.
 ; Contact: noel.rodrigue.7850@gmail.com for commercial licensing.
-=======
-<<<<<<< HEAD
-; Attribution required for any software compiled with LayerCake.
-; Commercial licensing available - contact: noel.rodrigue.7850@gmail.com
-=======
-; IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
-; Attribution required for any software compiled with LayerCake.
-; Contact: noel.rodrigue.7850@gmail.com for commercial licensing.
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
->>>>>>> Stashed changes
 ;===============================================================================
 
-; File: [FILENAME]
-; Purpose: [BRIEF_DESCRIPTION]
-; Module: [MODULE_NAME] (LC_core/LC_asm/CLI/Tools/Tests)
+; Template for LayerCake assembly files
+; Replace [COMPONENT_NAME] with actual component name
 ; 
-; Created: [DATE]
-; Last Modified: [DATE]
-; Version: [VERSION]
+; Example usage:
+; - Memory Manager
+; - System Call Handler  
+; - Core Language Parser
+; - Optimization Engine
 ;
-; Dependencies:
-; - [LIST_DEPENDENCIES]
-;
-; Public Interface:
-; - [LIST_PUBLIC_FUNCTIONS]
-;
-; Internal Functions:  
-; - [LIST_INTERNAL_FUNCTIONS]
+; This template ensures consistent copyright headers across all LayerCake files
+; and maintains proper attribution requirements as specified in the license.
+
+; [ADD YOUR CODE HERE]
+
+;===============================================================================
+; END OF TEMPLATE
 ;===============================================================================

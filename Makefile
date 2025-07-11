@@ -1,9 +1,3 @@
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-# Makefile pour projet assembleur Linux
-=======
->>>>>>> Stashed changes
 # LayerCake Compiler Makefile
 # Copyright (c) 2024-2025 Rodrigue Noel (r0d30)
 # Licensed under MIT License with Enhanced Attribution
@@ -11,20 +5,10 @@
 # IMPORTANT: Commercial sale of LayerCake or renamed forks is PROHIBITED.
 # See LICENSE file for full terms and restrictions.
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 
-<<<<<<< HEAD
-=======
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
->>>>>>> Stashed changes
-=======
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 AS = nasm
 ASFLAGS = -f elf64
 LD = ld
@@ -43,83 +27,102 @@ BUILDDIR = build
 OBJDIR = $(BUILDDIR)/obj
 
 # Fichiers sources
-SOURCES = $(filter-out $(SRCDIR)/main_win.asm,$(wildcard $(SRCDIR)/*.asm))
+SOURCES = $(filter-out $(SRCDIR)/main_win.asm $(SRCDIR)/COPYRIGHT_HEADER_TEMPLATE.asm $(SRCDIR)/*_backup.asm,$(wildcard $(SRCDIR)/*.asm))
 
 # Configuration
 OBJECTS = $(patsubst $(SRCDIR)/%.asm,$(OBJDIR)/%.o,$(SOURCES))
 TARGET = $(BUILDDIR)/$(PROG_NAME)
 
 # =============================================================================
-# CIBLES DE COMPILATION
+# CIBLES PRINCIPALES
 # =============================================================================
 
-.PHONY: build run debug
-
-# Construction du programme
-build: $(TARGET)
-
-$(TARGET): $(OBJECTS)
-	@mkdir -p $(BUILDDIR)
-	@echo "-- Édition de liens --"
-	$(CC) -no-pie -nostartfiles $(OBJECTS) -o $(TARGET)
-	@echo "-- Programme créé: $(TARGET) --"
-
-# Compiler les fichiers .asm en .o
-$(OBJDIR)/%.o: $(SRCDIR)/%.asm
-	@mkdir -p $(OBJDIR)
-	@echo "Assemblage: $< -> $@"
-	$(AS) $(ASFLAGS) $< -o $@
-
-# Exécuter le programme
-run: build
-	@echo "-- Exécution de $(TARGET) --"
-	$(TARGET)
-
-# Déboguer avec GDB
-debug: build
-	@echo "-- Débogage de $(TARGET) avec GDB --"
-	gdb $(TARGET)
-
-# =============================================================================
-# CIBLES GÉNÉRALES
-# =============================================================================
-
-.PHONY: all clean help dev test
+.PHONY: all clean help dev test build_elf run
 
 # Cible par défaut
-all: build
+all: $(TARGET).elf
 
-# Raccourci développement : compile et exécute
-dev: build run
-
-# Raccourci test rapide : nettoie, compile et exécute
-test: clean build run
-
-# Nettoyer le répertoire build
-clean:
-	rm -rf $(BUILDDIR)
-
-# Afficher l'aide
+# Aide
 help:
-	@echo "=== LayerCake Compiler - Aide ==="
 	@echo ""
-	@echo "Cibles principales:"
-	@echo "  dev          - Compile et exécute rapidement"
-	@echo "  test         - Clean + compile + exécute"
-	@echo "  build        - Compile le programme"
-	@echo "  run          - Compile et exécute"
-	@echo "  debug        - Compile et lance GDB"
-	@echo "  clean        - Nettoie les fichiers de compilation"
+	@echo "LayerCake Compiler Build System"
+	@echo "==============================="
 	@echo ""
-	@echo "Variables:"
-	@echo "  PROG_NAME  - Nom du programme (défaut: LayerCake)"
+	@echo "Available targets:"
+	@echo "  dev         - Compile and run in one step (default program)"
+	@echo "  test        - Alias for dev"
+	@echo "  build_elf   - Build only the ELF executable"
+	@echo "  run         - Run the built executable"
+	@echo "  clean       - Remove all build artifacts"
+	@echo "  help        - Show this help message"
 	@echo ""
-	@echo "Exemples d'utilisation:"
-	@echo "  wsl make dev                          # Développement rapide"
-	@echo "  wsl make test                         # Test complet"
-	@echo "  wsl make build run                    # Compile puis exécute"
-	@echo "  wsl make dev PROG_NAME=monprog        # Avec nom custom"
-	@echo "  wsl make clean                        # Nettoie tout"
+	@echo "Environment variables:"
+	@echo "  PROG_NAME   - Set program name (default: LayerCake)"
 	@echo ""
-	@echo "Fichiers générés:"
-	@echo "  build/PROG_NAME - Exécutable Linux"
+	@echo "Examples:"
+	@echo "  make dev PROG_NAME=hello_world"
+	@echo "  make build_elf PROG_NAME=my_program"
+	@echo "  make clean"
+	@echo ""
+
+# Construction du répertoire de build
+$(BUILDDIR):
+	@mkdir -p $(BUILDDIR)
+
+# Construction du répertoire d'objets
+$(OBJDIR): | $(BUILDDIR)
+	@mkdir -p $(OBJDIR)
+
+# Compilation des fichiers source
+$(OBJDIR)/%.o: $(SRCDIR)/%.asm | $(OBJDIR)
+	@echo "Assembling $< -> $@"
+	$(AS) $(ASFLAGS) -o $@ $<
+
+# Edition de liens pour créer l'exécutable ELF
+$(TARGET).elf: $(OBJECTS) | $(BUILDDIR)
+	@echo "Linking objects -> $@"
+	$(LD) -o $@ $(OBJECTS)
+
+# =============================================================================
+# CIBLES D'USAGE
+# =============================================================================
+
+# Développement rapide : compile et exécute
+dev: $(TARGET).elf
+	@echo "Running $(TARGET).elf..."
+	@$(TARGET).elf
+
+# Test (alias pour dev)
+test: dev
+
+# Construction seulement
+build_elf: $(TARGET).elf
+
+# Exécution seulement (sans recompilation)
+run:
+	@if [ -f "$(TARGET).elf" ]; then \
+		echo "Running $(TARGET).elf..."; \
+		$(TARGET).elf; \
+	else \
+		echo "Error: $(TARGET).elf not found. Run 'make build_elf' first."; \
+		exit 1; \
+	fi
+
+# =============================================================================
+# NETTOYAGE
+# =============================================================================
+
+clean:
+	@echo "Cleaning build artifacts..."
+	@rm -rf $(BUILDDIR)
+	@echo "Clean complete."
+
+# =============================================================================
+# DEPENDENCIES
+# =============================================================================
+
+# Toutes les sources dépendent du fichier de macros
+$(OBJECTS): $(SRCDIR)/lc_syscalls.asm
+
+# Gestion automatique des dépendances
+-include $(OBJECTS:.o=.d)

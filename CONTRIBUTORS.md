@@ -41,12 +41,7 @@ This file acknowledges all the people who have contributed to the LayerCake proj
 
 ## Commercial Licensing
 
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
 For commercial licensing opportunities or business partnerships:
-=======
->>>>>>> Stashed changes
 **IMPORTANT LICENSING TERMS:**
 - LayerCake is free to use, modify, and distribute with proper attribution
 - **Commercial sale of LayerCake compiler or libraries is STRICTLY PROHIBITED**
@@ -54,10 +49,6 @@ For commercial licensing opportunities or business partnerships:
 - All commercial licensing rights reserved to original creator
 
 For commercial partnerships or special licensing arrangements:
-<<<<<<< Updated upstream
-=======
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
->>>>>>> Stashed changes
 - Contact: noel.rodrigue.7850@gmail.com
 - Original creator retains exclusive commercial licensing rights
 - Revenue sharing opportunities available for major contributors

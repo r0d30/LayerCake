@@ -4,18 +4,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT%20Enhanced-blue.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Linux%20x64-green.svg)](#)
-<<<<<<< HEAD
-<<<<<<< Updated upstream
 [![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](#)
-=======
-<<<<<<< HEAD
-=======
 [![Non-Commercial](https://img.shields.io/badge/Commercial%20Sale-PROHIBITED-red.svg)](LICENSING.md)
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
->>>>>>> Stashed changes
-=======
-[![Status](https://img.shields.io/badge/Status-In%20Development-orange.svg)](#)
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 
 ---
 
@@ -159,17 +149,12 @@ LayerCake/
 └── Makefile              # Build system
 ```
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 ### File Status
 - **src/main.asm**: "Hello World" test program with official macros
-- **src/LC_core/lc_syscalls.asm**: 1000+ lines of assembly macros
+- **src/lc_syscalls.asm**: 400+ lines of clean assembly macros (reduced from 1180 lines)
 - **ASSEMBLY_LINUX_GUIDE.txt**: Complete guide (2400+ lines)
 - **Makefile**: Linux/WSL optimized build system
-<<<<<<< HEAD
-=======
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see:
@@ -188,27 +173,6 @@ We welcome contributions! Please see:
 ## 📜 Legal & Licensing
 
 ### Open Source License
-<<<<<<< HEAD
-LayerCake is licensed under **MIT License with Enhanced Attribution**:
-- ✅ **Free to use** for any purpose
-- ✅ **Free to modify** and distribute as LayerCake
-- ❌ **Commercial sale** of LayerCake or its libraries requires permission
-- ✅ **No payment required** for use and modification
-
-### Attribution Requirements
-- Software compiled with LayerCake must credit LayerCake
-- Derivative works must acknowledge LayerCake
-- Commercial products should include LayerCake attribution
-
-### Commercial Rights
-The original creator retains exclusive rights to:
-- Commercial licensing alternatives
-- Official support and consulting  
-- Premium tools and extensions
-- LayerCake trademark usage
-
-**See [LICENSE](LICENSE) for complete terms.**
-=======
 LayerCake is licensed under **MIT License with Enhanced Attribution and Commercial Restrictions**:
 - ✅ **Free to use** for personal, educational, and research purposes
 - ✅ **Free to modify** and redistribute as LayerCake
@@ -230,7 +194,6 @@ The original creator retains exclusive rights to:
 - LayerCake trademark and branding usage
 
 **See [LICENSE](LICENSE) for complete legal terms and [LICENSING.md](LICENSING.md) for quick reference.**
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
 
 ## 💰 Commercial Services
 
@@ -276,9 +239,6 @@ See **[src/tasks.txt](src/tasks.txt)** for detailed roadmap.
 - **Original Creator**: Rodrigue Noel (r0d30) - Project founder and architect
 - **Community**: All contributors and supporters
 - **Inspiration**: C, Rust, Python, and the assembly language community
->>>>>>> Stashed changes
-=======
->>>>>>> 2f0128e49b2c8c2f721ea60c92cd6db9e3d670f9
 
 ---
 

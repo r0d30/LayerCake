@@ -1,59 +1,3 @@
-<<<<<<< Updated upstream
-# LayerCake Commercial Rights & Business Model
-=======
-<<<<<<< HEAD
-# LayerCake Commercial Rights & Opportunities
->>>>>>> Stashed changes
-
-## 🎯 Business Model Overview
-
-LayerCake utilise un modèle **Open Core avec restrictions commerciales** qui te permet de :
-- ✅ Garder le projet open source et gratuit pour l'usage
-- ✅ Interdire la commercialisation de LayerCake lui-même
-- ✅ Conserver tous les droits commerciaux exclusifs  
-- ✅ Générer des revenus via services sans limiter l'adoption
-- ✅ Empêcher le renommage et l'appropriation
-
-## 💰 Sources de Revenus Exclusives
-
-### 1. **Services Professionnels Exclusifs**
-- Consulting et formation LayerCake officielle
-- Support premium avec SLA garantis
-- Développement sur mesure avec LayerCake
-- Migration de projets vers LayerCake
-- Audit et optimisation de code LayerCake
-
-### 2. **Licences Commerciales Spécialisées**
-- Licence sans attribution pour entreprises
-- Licence OEM pour distribution avec produits
-- Licence white-label pour intégration
-- Licence académique pour institutions
-
-### 3. **Outils et Extensions Premium (Exclusifs)**
-- IDE plugins avancés professionnels
-- Profilers et debuggers commerciaux
-- Cloud compilation services
-- Package repository premium
-- Outils de déploiement automatisé
-
-## 🚫 **Activités Interdites (Protection Maximale)**
-
-### **Commercialisation Interdite :**
-- ❌ **Vendre LayerCake** sous quelque forme que ce soit
-- ❌ **Vendre des libs LayerCake** ou extensions
-- ❌ **Créer un "SuperCake"** ou tout renommage
-- ❌ **Offrir LayerCake** comme service payant (SaaS)
-- ❌ **Bundler LayerCake** dans des distributions commerciales
-- ❌ **Créer des concurrents directs** basés sur LayerCake
-
-<<<<<<< Updated upstream
-=======
-### 6. **Partenariats Technologiques**
-- Licensing pour intégration dans d'autres produits
-- White-label compiler pour entreprises
-- SDK personnalisés
-- API premium pour tooling
-=======
 # LayerCake Commercial Rights & Business Model
 
 ## 🎯 Business Model Overview
@@ -97,7 +41,6 @@ LayerCake utilise un modèle **Open Core avec restrictions commerciales** qui te
 - ❌ **Bundler LayerCake** dans des distributions commerciales
 - ❌ **Créer des concurrents directs** basés sur LayerCake
 
->>>>>>> Stashed changes
 ### **Renommage Interdit :**
 - ❌ Impossible de redistribuer comme "MyCake", "FastCompiler", etc.
 - ❌ Même avec modifications, doit rester "LayerCake"
@@ -113,10 +56,6 @@ LayerCake utilise un modèle **Open Core avec restrictions commerciales** qui te
 - ✅ **Enseigner LayerCake** (avec attribution)
 - ✅ **Écrire sur LayerCake** (livres, articles, videos)
 - ✅ **Consulting** utilisant LayerCake (pas de vente de LayerCake)
-<<<<<<< Updated upstream
-=======
->>>>>>> f12161a (feat: LayerCake v1.0.1 - Complete license enforcement)
->>>>>>> Stashed changes
 
 ## 🏢 Stratégie Commerciale
 
